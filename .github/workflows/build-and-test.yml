@@ -1,0 +1,55 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create simulator
+        run: |
+          UDID=$(bash scripts/simulator.sh create)
+          echo "SIMULATOR_UDID=$UDID" >> "$GITHUB_ENV"
+
+      - name: Build for testing
+        id: build
+        run: bash scripts/build-for-testing.sh
+
+      - name: Unit tests
+        run: bash scripts/test.sh unit
+
+      - name: UI tests
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: bash scripts/test.sh ui
+
+      - name: Coverage summary
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: python3 scripts/coverage-summary.py "$RUNNER_TEMP/TestResults/unit.xcresult" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload test results
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/TestResults
+          retention-days: 14
+
+      - name: Delete simulator
+        if: ${{ always() && env.SIMULATOR_UDID != '' }}
+        run: bash scripts/simulator.sh delete "$SIMULATOR_UDID"
