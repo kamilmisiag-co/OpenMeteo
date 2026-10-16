@@ -1,6 +1,6 @@
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-PROJECT=OpenMeteo.xcodeproj
+WORKSPACE=OpenMeteo.xcworkspace
 SCHEME=OpenMeteo
 
 WORK_DIR="${RUNNER_TEMP:-$PWD/build}"

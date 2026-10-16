@@ -62,6 +62,17 @@
                ReferencedContainer = "container:OpenMeteo.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DesignSystemTests"
+               BuildableName = "DesignSystemTests"
+               BlueprintName = "DesignSystemTests"
+               ReferencedContainer = "container:Packages/DesignSystem">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
