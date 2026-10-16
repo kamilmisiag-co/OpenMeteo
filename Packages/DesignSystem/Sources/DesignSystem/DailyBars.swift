@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Utils
 
 public struct DailyBars: View {
     public enum Style: Sendable {
@@ -43,7 +44,7 @@ public struct DailyBars: View {
 
     private func height(for score: Int?, maximum: CGFloat) -> CGFloat {
         guard let score else { return 2 }
-        return max(2, maximum * CGFloat(min(max(score, 0), 100)) / 100)
+        return max(2, maximum * CGFloat(score.clamped(to: 0...100)) / 100)
     }
 
     private func cardBar(_ index: Int) -> some View {
