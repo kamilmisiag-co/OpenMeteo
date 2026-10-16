@@ -4,7 +4,7 @@ source "$(dirname "$0")/common.sh"
 require_simulator
 
 xcodebuild build-for-testing \
-  -project "$PROJECT" \
+  -workspace "$WORKSPACE" \
   -scheme "$SCHEME" \
   -destination "$DESTINATION" \
   -derivedDataPath "$DERIVED_DATA" \

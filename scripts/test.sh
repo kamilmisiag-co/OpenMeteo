@@ -6,8 +6,9 @@ require_simulator
 case "$1" in
   unit) TARGET=OpenMeteoTests ;;
   ui) TARGET=OpenMeteoUITests ;;
+  snapshot) TARGET=DesignSystemTests ;;
   *)
-    echo "Usage: $0 unit | ui" >&2
+    echo "Usage: $0 unit | ui | snapshot" >&2
     exit 64
     ;;
 esac
@@ -19,7 +20,7 @@ mkdir -p "$RESULTS_DIR"
 run_tests() {
   rm -rf "$RESULT_BUNDLE"
   xcodebuild test-without-building \
-    -project "$PROJECT" \
+    -workspace "$WORKSPACE" \
     -scheme "$SCHEME" \
     -destination "$DESTINATION" \
     -derivedDataPath "$DERIVED_DATA" \
