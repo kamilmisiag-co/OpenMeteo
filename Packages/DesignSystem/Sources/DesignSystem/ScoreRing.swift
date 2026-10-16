@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Utils
 
 public struct ScoreRing: View {
     public enum Size: Sendable {
@@ -37,7 +38,7 @@ public struct ScoreRing: View {
             if let score {
                 Circle()
                     .inset(by: lineWidth / 2)
-                    .trim(from: 0, to: CGFloat(min(max(score, 0), 100)) / 100)
+                    .trim(from: 0, to: CGFloat(score.clamped(to: 0...100)) / 100)
                     .stroke(rating.color, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .rotationEffect(.degrees(-90))
             }

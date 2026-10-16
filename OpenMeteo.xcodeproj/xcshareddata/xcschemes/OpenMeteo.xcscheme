@@ -73,6 +73,17 @@
                ReferencedContainer = "container:Packages/DesignSystem">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "UtilsTests"
+               BuildableName = "UtilsTests"
+               BlueprintName = "UtilsTests"
+               ReferencedContainer = "container:Packages/Utils">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

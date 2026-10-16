@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		14AE6D6030812DBA006369E5 /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 14AE6D6130812DBA006369E5 /* DesignSystem */; };
+		14AE6D6330812DBA006369E5 /* Utils in Frameworks */ = {isa = PBXBuildFile; productRef = 14AE6D6430812DBA006369E5 /* Utils */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			files = (
 				14AE6D6030812DBA006369E5 /* DesignSystem in Frameworks */,
+				14AE6D6330812DBA006369E5 /* Utils in Frameworks */,
 			);
 		};
 		14AE6D3A30812DBA006369E5 /* Frameworks */ = {
@@ -110,6 +112,7 @@
 			name = OpenMeteo;
 			packageProductDependencies = (
 				14AE6D6130812DBA006369E5 /* DesignSystem */,
+				14AE6D6430812DBA006369E5 /* Utils */,
 			);
 			productName = OpenMeteo;
 			productReference = 14AE6D3030812DB8006369E5 /* OpenMeteo.app */;
@@ -191,6 +194,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				14AE6D6230812DBA006369E5 /* XCLocalSwiftPackageReference "Packages/DesignSystem" */,
+				14AE6D6530812DBA006369E5 /* XCLocalSwiftPackageReference "Packages/Utils" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 14AE6D3130812DB8006369E5 /* Products */;
@@ -572,6 +576,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/DesignSystem;
 		};
+		14AE6D6530812DBA006369E5 /* XCLocalSwiftPackageReference "Packages/Utils" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Utils;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -579,6 +587,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 14AE6D6230812DBA006369E5 /* XCLocalSwiftPackageReference "Packages/DesignSystem" */;
 			productName = DesignSystem;
+		};
+		14AE6D6430812DBA006369E5 /* Utils */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 14AE6D6530812DBA006369E5 /* XCLocalSwiftPackageReference "Packages/Utils" */;
+			productName = Utils;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

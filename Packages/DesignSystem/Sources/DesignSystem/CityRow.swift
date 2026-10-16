@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Utils
 
 public struct CityRow: View {
     let name: String
@@ -49,12 +50,7 @@ public struct CityRow: View {
     }
 
     private var title: AttributedString {
-        var title = AttributedString(name)
-        if let highlight, !highlight.isEmpty,
-           let range = title.range(of: highlight, options: [.anchored, .caseInsensitive, .diacriticInsensitive]) {
-            title[range].font = .body.weight(.semibold)
-        }
-        return title
+        AttributedString(name).applying(AttributeContainer().font(.body.weight(.semibold)), toPrefixMatching: highlight ?? "")
     }
 }
 

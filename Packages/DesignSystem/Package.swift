@@ -9,11 +9,15 @@ let package = Package(
         .library(name: "DesignSystem", targets: ["DesignSystem"]),
     ],
     dependencies: [
+        .package(path: "../Utils"),
         .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.19.6"),
     ],
     targets: [
         .target(
             name: "DesignSystem",
+            dependencies: [
+                .product(name: "Utils", package: "Utils"),
+            ],
             resources: [.process("Resources")],
         ),
         .testTarget(
