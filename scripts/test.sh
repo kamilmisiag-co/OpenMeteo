@@ -4,7 +4,7 @@ source "$(dirname "$0")/common.sh"
 require_simulator
 
 case "$1" in
-  unit) TARGETS=(OpenMeteoTests UtilsTests NetworkingTests LogicTests) ;;
+  unit) TARGETS=(OpenMeteoTests UtilsTests NetworkingTests LogicTests OpenMeteoAPITests) ;;
   ui) TARGETS=(OpenMeteoUITests) ;;
   snapshot) TARGETS=(DesignSystemTests) ;;
   *)
