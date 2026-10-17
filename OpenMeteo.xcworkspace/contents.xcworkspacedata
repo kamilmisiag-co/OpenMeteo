@@ -10,4 +10,7 @@
    <FileRef
       location = "group:Packages/Utils">
    </FileRef>
+   <FileRef
+      location = "group:Packages/Networking">
+   </FileRef>
 </Workspace>
