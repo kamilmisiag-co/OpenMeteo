@@ -95,6 +95,17 @@
                ReferencedContainer = "container:Packages/Networking">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "LogicTests"
+               BuildableName = "LogicTests"
+               BlueprintName = "LogicTests"
+               ReferencedContainer = "container:Packages/Logic">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
