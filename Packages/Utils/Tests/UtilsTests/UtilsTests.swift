@@ -17,6 +17,31 @@ struct ClampedTests {
     }
 }
 
+@Suite("Uniqued")
+struct UniquedTests {
+    @Test("The first element for each key is kept, in the original order")
+    func keepsFirstPerKey() {
+        let words = ["apple", "avocado", "banana", "blueberry", "cherry", "apricot"]
+        #expect(words.uniqued { $0.first } == ["apple", "banana", "cherry"])
+        #expect([3, 1, 3, 2, 1].uniqued { $0 } == [3, 1, 2])
+        #expect([Int]().uniqued { $0 }.isEmpty)
+    }
+
+    @Test("The key is computed once per element and its errors are rethrown")
+    func evaluatesKeyOnce() throws {
+        var evaluated: [Int] = []
+        let unique = [1, 2, 1, 3].uniqued { value in
+            evaluated.append(value)
+            return value
+        }
+        #expect(unique == [1, 2, 3])
+        #expect(evaluated == [1, 2, 1, 3])
+        #expect(throws: URLError(.badURL)) {
+            try [1, 2].uniqued { (_: Int) throws -> Int in throw URLError(.badURL) }
+        }
+    }
+}
+
 @Suite("Error classification")
 struct ErrorClassificationTests {
     @Test("Connectivity errors are told apart from other failures")

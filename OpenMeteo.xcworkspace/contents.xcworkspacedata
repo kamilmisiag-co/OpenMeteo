@@ -13,4 +13,7 @@
    <FileRef
       location = "group:Packages/Networking">
    </FileRef>
+   <FileRef
+      location = "group:Packages/Logic">
+   </FileRef>
 </Workspace>
