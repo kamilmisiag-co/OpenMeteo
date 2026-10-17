@@ -33,6 +33,61 @@ struct ErrorClassificationTests {
         #expect(URLError(.cancelled).isCancellation)
         #expect(!URLError(.notConnectedToInternet).isCancellation)
     }
+
+    @Test("Wrapping errors are classified by the error they wrap")
+    func underlyingErrors() {
+        #expect(WrappingError(underlyingError: URLError(.notConnectedToInternet)).isConnectivity)
+        #expect(WrappingError(underlyingError: CancellationError()).isCancellation)
+        #expect(!WrappingError(underlyingError: nil).isConnectivity)
+        #expect(!WrappingError(underlyingError: nil).isCancellation)
+        #expect(WrappingError(underlyingError: WrappingError(underlyingError: URLError(.timedOut))).isConnectivity)
+    }
+
+    @Test("Wrappers that point back at themselves or each other terminate")
+    func cyclicWrappers() {
+        #expect(!SelfWrappingError().isConnectivity)
+        #expect(!SelfWrappingError().isCancellation)
+        #expect(!LoopingErrorA().isConnectivity)
+        #expect(!LoopingErrorB().isCancellation)
+        #expect(!ChangingLoopError().isConnectivity)
+    }
+
+    @Test("A wrapped URL cancellation is not task cancellation")
+    func wrappedURLCancellation() {
+        #expect(!WrappingError(underlyingError: URLError(.cancelled)).isCancellation)
+        #expect(URLError(.cancelled).isCancellation)
+    }
+
+    @Test("Wrappers that print like the error they wrap are still unwrapped")
+    func echoingWrapper() {
+        #expect(EchoingError(underlyingError: WrappingError(underlyingError: URLError(.notConnectedToInternet))).isConnectivity)
+    }
+}
+
+struct WrappingError: UnderlyingErrorProviding {
+    let underlyingError: (any Error)?
+}
+
+struct SelfWrappingError: UnderlyingErrorProviding {
+    var underlyingError: (any Error)? { self }
+}
+
+struct LoopingErrorA: UnderlyingErrorProviding {
+    var underlyingError: (any Error)? { LoopingErrorB() }
+}
+
+struct LoopingErrorB: UnderlyingErrorProviding {
+    var underlyingError: (any Error)? { LoopingErrorA() }
+}
+
+struct ChangingLoopError: UnderlyingErrorProviding {
+    let id = UUID()
+    var underlyingError: (any Error)? { ChangingLoopError() }
+}
+
+struct EchoingError: UnderlyingErrorProviding, CustomDebugStringConvertible {
+    let underlyingError: (any Error)?
+    var debugDescription: String { underlyingError.map { String(reflecting: $0) } ?? "" }
 }
 
 @Suite("String")
