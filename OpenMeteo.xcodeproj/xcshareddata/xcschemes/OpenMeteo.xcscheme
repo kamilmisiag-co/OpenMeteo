@@ -106,6 +106,17 @@
                ReferencedContainer = "container:Packages/Logic">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "OpenMeteoAPITests"
+               BuildableName = "OpenMeteoAPITests"
+               BlueprintName = "OpenMeteoAPITests"
+               ReferencedContainer = "container:Packages/OpenMeteoAPI">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

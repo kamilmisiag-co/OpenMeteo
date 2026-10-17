@@ -16,4 +16,7 @@
    <FileRef
       location = "group:Packages/Logic">
    </FileRef>
+   <FileRef
+      location = "group:Packages/OpenMeteoAPI">
+   </FileRef>
 </Workspace>
