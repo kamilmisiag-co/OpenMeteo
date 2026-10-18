@@ -10,6 +10,7 @@ import Networking
 import NetworkingMocks
 import Testing
 import Utils
+import UtilsMocks
 
 @Suite("Network client")
 struct NetworkClientTests {
@@ -94,7 +95,7 @@ struct NetworkClientTests {
 
         #expect(city == Fixtures.lisbon)
         #expect(await transport.requests.count == 2)
-        #expect(await sleeper.durations == [.seconds(3)])
+        #expect(sleeper.durations == [.seconds(3)])
     }
 
     @Test("Gives up with the last error once retries run out")
@@ -109,7 +110,7 @@ struct NetworkClientTests {
 
         #expect(error?.statusCode == 503)
         #expect(await transport.requests.count == 3)
-        #expect(await sleeper.durations == [.seconds(1), .seconds(2)])
+        #expect(sleeper.durations == [.seconds(1), .seconds(2)])
     }
 
     @Test("Interceptor failures reach observers and follow the retry policy")
@@ -205,7 +206,7 @@ struct NetworkClientTests {
         }
 
         #expect(await transport.requests.count == 1)
-        #expect(await sleeper.durations.isEmpty)
+        #expect(sleeper.durations.isEmpty)
     }
 
     @Test("Decoding failures are not retried")

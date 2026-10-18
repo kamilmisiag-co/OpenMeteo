@@ -1,13 +1,13 @@
 //
 //  ManualDateProvider.swift
-//  LogicMocks
+//  UtilsMocks
 //
-//  Created by Kamil Misiag on 17/10/2026.
+//  Created by Kamil Misiag on 18/10/2026.
 //
 
 import Foundation
-import Logic
 import Synchronization
+import Utils
 
 public final class ManualDateProvider: DateProviding {
     private let date: Mutex<Date>

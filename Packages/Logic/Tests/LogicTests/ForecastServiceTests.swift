@@ -10,6 +10,7 @@ import Logic
 import LogicMocks
 import Synchronization
 import Testing
+import UtilsMocks
 
 @Suite("Forecast service")
 struct ForecastServiceTests {

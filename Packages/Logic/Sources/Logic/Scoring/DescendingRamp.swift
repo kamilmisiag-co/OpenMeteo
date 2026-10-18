@@ -20,6 +20,6 @@ public struct DescendingRamp: SuitabilityCurve {
         if value <= fullUntil { return 1 }
         guard zeroFrom > fullUntil else { return 0 }
         let level = 1 - (value - fullUntil) / (zeroFrom - fullUntil)
-        return level.isNaN ? 0 : level.clamped(to: 0...1)
+        return level.clamped(to: 0...1, ifNaN: 0)
     }
 }

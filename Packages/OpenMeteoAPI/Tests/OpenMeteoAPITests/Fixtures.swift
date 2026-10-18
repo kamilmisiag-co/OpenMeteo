@@ -11,6 +11,7 @@ import Networking
 import OpenMeteoAPI
 import Testing
 import Utils
+import UtilsMocks
 
 enum Fixtures {
     enum File: String, CaseIterable {
@@ -132,7 +133,7 @@ enum Fixtures {
 
     static func retryPolicy(
         randomFraction: @escaping ExponentialBackoffRetryPolicy.RandomFraction = { 1 },
-        now: @escaping ExponentialBackoffRetryPolicy.Now = { Date(timeIntervalSince1970: 0) }
+        dateProvider: any DateProviding = ManualDateProvider(now: Date(timeIntervalSince1970: 0))
     ) -> ExponentialBackoffRetryPolicy {
         ExponentialBackoffRetryPolicy(
             maximumRetries: OpenMeteoStandard.maximumRetries,
@@ -141,7 +142,7 @@ enum Fixtures {
             maximumDelay: OpenMeteoStandard.maximumRetryDelay,
             jitter: OpenMeteoStandard.retryJitter,
             randomFraction: randomFraction,
-            now: now,
+            dateProvider: dateProvider,
             retryableMethods: OpenMeteoStandard.retryableMethods,
             retryableStatusCodes: OpenMeteoStandard.retryableStatusCodes,
             retryableURLErrorCodes: OpenMeteoStandard.retryableURLErrorCodes

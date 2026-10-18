@@ -5,6 +5,8 @@
 //  Created by Kamil Misiag on 17/10/2026.
 //
 
+import Utils
+
 public struct ActivityOutlook: Hashable, Sendable {
     public let activity: Activity
     public let days: [DayAssessment]
@@ -37,6 +39,6 @@ public struct ActivityOutlook: Hashable, Sendable {
     }
 
     public func score(onDay day: Int) -> Int? {
-        days.indices.contains(day) ? days[day].score : nil
+        days.element(at: day)?.score
     }
 }

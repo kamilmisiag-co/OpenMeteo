@@ -60,8 +60,8 @@ public struct DailyBars: View {
                     .frame(width: 10, height: height(for: score, maximum: 40))
                     .opacity(isDimmed(index) ? 0.3 : 1)
             }
-            if initials.indices.contains(index) {
-                Text(initials[index])
+            if let initial = initials.element(at: index) {
+                Text(initial)
                     .font(.caption2.weight(isSelected ? .bold : .medium))
                     .foregroundStyle(isSelected ? .primary : .secondary)
             }

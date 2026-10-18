@@ -20,6 +20,6 @@ public struct AscendingRamp: SuitabilityCurve {
         guard value > zeroUntil else { return 0 }
         guard fullFrom > zeroUntil else { return 1 }
         let level = 1 - (fullFrom - value) / (fullFrom - zeroUntil)
-        return level.isNaN ? 0 : level.clamped(to: 0...1)
+        return level.clamped(to: 0...1, ifNaN: 0)
     }
 }

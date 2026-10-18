@@ -10,6 +10,8 @@ import Logic
 import LogicMocks
 import Synchronization
 import Testing
+import Utils
+import UtilsMocks
 
 @Suite("City search flow")
 struct CitySearchFlowTests {
@@ -17,7 +19,7 @@ struct CitySearchFlowTests {
         case unavailable
     }
 
-    private enum DelayError: Error {
+    private enum SleepError: Error {
         case interrupted
     }
 
@@ -47,13 +49,13 @@ struct CitySearchFlowTests {
         }
     }
 
-    private struct CancellingDelayer: Delaying {
-        func delay(for duration: Duration) async throws {
+    private struct CancellingSleeper: Sleeping {
+        func sleep(for duration: Duration) async throws {
             withUnsafeCurrentTask { $0?.cancel() }
         }
     }
 
-    private final class FailingDelayer: Delaying {
+    private final class FailingSleeper: Sleeping {
         private let error: any Error
         private let cancelling: Bool
         private let recorded = Mutex<[Duration]>([])
@@ -67,7 +69,7 @@ struct CitySearchFlowTests {
             recorded.withLock { $0 }
         }
 
-        func delay(for duration: Duration) async throws {
+        func sleep(for duration: Duration) async throws {
             recorded.withLock { $0.append(duration) }
             if cancelling {
                 withUnsafeCurrentTask { $0?.cancel() }
@@ -79,7 +81,7 @@ struct CitySearchFlowTests {
     private static let debounce = Duration.milliseconds(40)
     private static let rawLisbon = "  Lisbon ,  Portugal "
     private static let lisbonResults = CitySearchState.results(query: "Lisbon", cities: [Fixtures.lisbon, Fixtures.lisboa])
-    private let delayer = RecordingDelayer()
+    private let sleeper = RecordingSleeper()
 
     @Test("A query the normalizer rejects is idle at once and resolves to idle without debouncing or searching", arguments: [
         "", "   ", "L", ", Lisbon",
@@ -90,7 +92,7 @@ struct CitySearchFlowTests {
         #expect(resolver.immediateState(for: raw, current: Self.lisbonResults) == .idle)
         #expect(await resolver.resolvedState(for: raw, debounced: true) == .idle)
         #expect(await resolver.resolvedState(for: raw, debounced: false) == .idle)
-        #expect(delayer.durations.isEmpty)
+        #expect(sleeper.durations.isEmpty)
         #expect(await searcher.queries.isEmpty)
     }
 
@@ -149,13 +151,13 @@ struct CitySearchFlowTests {
 
     @Test("A debounced search waits for the injected debounce once and only then searches the raw query")
     func debouncedSearch() async {
-        let searcher = MockCitySearcher { [delayer] _ in
-            #expect(delayer.durations == [Self.debounce])
+        let searcher = MockCitySearcher { [sleeper] _ in
+            #expect(sleeper.durations == [Self.debounce])
             return .matches(query: "Lisbon", cities: [Fixtures.lisbon])
         }
         let state = await flow(searching: searcher).resolvedState(for: Self.rawLisbon, debounced: true)
         #expect(state == .results(query: "Lisbon", cities: [Fixtures.lisbon]))
-        #expect(delayer.durations == [Self.debounce])
+        #expect(sleeper.durations == [Self.debounce])
         #expect(await searcher.queries == [Self.rawLisbon])
     }
 
@@ -164,7 +166,7 @@ struct CitySearchFlowTests {
         let searcher = MockCitySearcher { _ in .matches(query: "Lisbon", cities: [Fixtures.lisbon]) }
         let state = await flow(searching: searcher).resolvedState(for: Self.rawLisbon, debounced: false)
         #expect(state == .results(query: "Lisbon", cities: [Fixtures.lisbon]))
-        #expect(delayer.durations.isEmpty)
+        #expect(sleeper.durations.isEmpty)
         #expect(await searcher.queries == [Self.rawLisbon])
     }
 
@@ -179,7 +181,7 @@ struct CitySearchFlowTests {
             }
             #expect(await task.value == nil)
         }
-        #expect(delayer.durations.isEmpty)
+        #expect(sleeper.durations.isEmpty)
         #expect(await searcher.queries.isEmpty)
     }
 
@@ -192,7 +194,7 @@ struct CitySearchFlowTests {
             return await resolver.resolvedState(for: Self.rawLisbon, debounced: true)
         }
         #expect(await task.value == nil)
-        #expect(delayer.durations == [Self.debounce])
+        #expect(sleeper.durations == [Self.debounce])
         #expect(await searcher.queries.isEmpty)
     }
 
@@ -200,22 +202,22 @@ struct CitySearchFlowTests {
     func cancelledDuringUninterruptedDebounce() async {
         let searcher = MockCitySearcher { _ in .matches(query: "Lisbon", cities: [Fixtures.lisbon]) }
         let failures = RecordingFailureClassifier(failure: .unavailable)
-        let resolver = flow(searching: searcher, delayer: CancellingDelayer(), failures: failures)
+        let resolver = flow(searching: searcher, sleeper: CancellingSleeper(), failures: failures)
         #expect(await Task { await resolver.resolvedState(for: Self.rawLisbon, debounced: true) }.value == nil)
         #expect(await searcher.queries.isEmpty)
         #expect(failures.receivedErrors.isEmpty)
     }
 
     @Test("A debounce that fails with a plain error while the search is not cancelled still searches and resolves", arguments: [
-        DelayError.interrupted as any Error, URLError(.timedOut), SearchError.unavailable,
+        SleepError.interrupted as any Error, URLError(.timedOut), SearchError.unavailable,
     ])
     func failedDebounceStillSearches(error: any Error) async {
         let searcher = MockCitySearcher { _ in .matches(query: "Lisbon", cities: [Fixtures.lisbon]) }
         let failures = RecordingFailureClassifier(failure: .offline)
-        let delayer = FailingDelayer(throwing: error, cancelling: false)
-        let state = await flow(searching: searcher, delayer: delayer, failures: failures).resolvedState(for: Self.rawLisbon, debounced: true)
+        let sleeper = FailingSleeper(throwing: error, cancelling: false)
+        let state = await flow(searching: searcher, sleeper: sleeper, failures: failures).resolvedState(for: Self.rawLisbon, debounced: true)
         #expect(state == .results(query: "Lisbon", cities: [Fixtures.lisbon]))
-        #expect(delayer.durations == [Self.debounce])
+        #expect(sleeper.durations == [Self.debounce])
         #expect(await searcher.queries == [Self.rawLisbon])
         #expect(failures.receivedErrors.isEmpty)
     }
@@ -226,10 +228,10 @@ struct CitySearchFlowTests {
     func cancellationErrorFromDebounceStillSearches(error: any Error) async {
         let searcher = MockCitySearcher { _ in .matches(query: "Lisbon", cities: [Fixtures.lisbon]) }
         let failures = RecordingFailureClassifier(failure: .offline)
-        let delayer = FailingDelayer(throwing: error, cancelling: false)
-        let state = await flow(searching: searcher, delayer: delayer, failures: failures).resolvedState(for: Self.rawLisbon, debounced: true)
+        let sleeper = FailingSleeper(throwing: error, cancelling: false)
+        let state = await flow(searching: searcher, sleeper: sleeper, failures: failures).resolvedState(for: Self.rawLisbon, debounced: true)
         #expect(state == .results(query: "Lisbon", cities: [Fixtures.lisbon]))
-        #expect(delayer.durations == [Self.debounce])
+        #expect(sleeper.durations == [Self.debounce])
         #expect(await searcher.queries == [Self.rawLisbon])
         #expect(failures.receivedErrors.isEmpty)
     }
@@ -238,10 +240,10 @@ struct CitySearchFlowTests {
     func failedDebounceAfterCancellation() async {
         let searcher = MockCitySearcher { _ in .matches(query: "Lisbon", cities: [Fixtures.lisbon]) }
         let failures = RecordingFailureClassifier(failure: .offline)
-        let delayer = FailingDelayer(throwing: DelayError.interrupted, cancelling: true)
-        let resolver = flow(searching: searcher, delayer: delayer, failures: failures)
+        let sleeper = FailingSleeper(throwing: SleepError.interrupted, cancelling: true)
+        let resolver = flow(searching: searcher, sleeper: sleeper, failures: failures)
         #expect(await Task { await resolver.resolvedState(for: Self.rawLisbon, debounced: true) }.value == nil)
-        #expect(delayer.durations == [Self.debounce])
+        #expect(sleeper.durations == [Self.debounce])
         #expect(await searcher.queries.isEmpty)
         #expect(failures.receivedErrors.isEmpty)
     }
@@ -302,7 +304,7 @@ struct CitySearchFlowTests {
         #expect(state == .failed(query: "Lisbon", failure: classified))
         #expect(classifier.receivedErrors.map { $0 as? SearchError } == [.unavailable])
         #expect(await searcher.queries == [Self.rawLisbon])
-        #expect(delayer.durations == (debounced ? [Self.debounce] : []))
+        #expect(sleeper.durations == (debounced ? [Self.debounce] : []))
     }
 
     @Test("A cancellation error from a search that was not cancelled is classified like any other failure")
@@ -334,7 +336,7 @@ struct CitySearchFlowTests {
         #expect(rejecting.immediateState(for: "Zakopane", current: .idle) == nil)
         #expect(await rejecting.resolvedState(for: "Zakopane", debounced: true) == .idle)
         #expect(await searcher.queries == ["z"])
-        #expect(delayer.durations == [Self.debounce])
+        #expect(sleeper.durations == [Self.debounce])
     }
 
     private func flow(
@@ -344,9 +346,9 @@ struct CitySearchFlowTests {
             separators: StandardRules.querySeparators,
             invisibleScalars: StandardRules.queryInvisibleScalars
         ),
-        delayer customDelayer: (any Delaying)? = nil,
+        sleeper customSleeper: (any Sleeping)? = nil,
         failures: any SearchFailureClassifying = RecordingFailureClassifier(failure: .unavailable)
     ) -> CitySearchFlow {
-        CitySearchFlow(search: searcher, normalizer: normalizer, delayer: customDelayer ?? delayer, debounce: Self.debounce, failures: failures)
+        CitySearchFlow(search: searcher, normalizer: normalizer, sleeper: customSleeper ?? sleeper, debounce: Self.debounce, failures: failures)
     }
 }

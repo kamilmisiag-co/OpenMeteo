@@ -28,7 +28,6 @@ public enum BackoffJitter: Hashable, Sendable {
 
 public struct ExponentialBackoffRetryPolicy: RetryPolicy {
     public typealias RandomFraction = @Sendable () -> Double
-    public typealias Now = @Sendable () -> Date
 
     private static let httpDateStrategies = [
         Date.ParseStrategy(
@@ -54,7 +53,7 @@ public struct ExponentialBackoffRetryPolicy: RetryPolicy {
     private let maximumDelay: Duration
     private let jitter: BackoffJitter
     private let randomFraction: RandomFraction
-    private let now: Now
+    private let dateProvider: any DateProviding
     private let retryableMethods: Set<HTTPMethod>
     private let retryableStatusCodes: Set<Int>
     private let retryableURLErrorCodes: Set<URLError.Code>
@@ -66,7 +65,7 @@ public struct ExponentialBackoffRetryPolicy: RetryPolicy {
         maximumDelay: Duration,
         jitter: BackoffJitter,
         randomFraction: @escaping RandomFraction,
-        now: @escaping Now,
+        dateProvider: any DateProviding,
         retryableMethods: Set<HTTPMethod>,
         retryableStatusCodes: Set<Int>,
         retryableURLErrorCodes: Set<URLError.Code>
@@ -77,7 +76,7 @@ public struct ExponentialBackoffRetryPolicy: RetryPolicy {
         self.maximumDelay = maximumDelay
         self.jitter = jitter
         self.randomFraction = randomFraction
-        self.now = now
+        self.dateProvider = dateProvider
         self.retryableMethods = retryableMethods
         self.retryableStatusCodes = retryableStatusCodes
         self.retryableURLErrorCodes = retryableURLErrorCodes
@@ -111,8 +110,7 @@ public struct ExponentialBackoffRetryPolicy: RetryPolicy {
     }
 
     private func unitFraction() -> Double {
-        let fraction = randomFraction()
-        return fraction.isNaN ? 1 : fraction.clamped(to: 0...1)
+        randomFraction().clamped(to: 0...1, ifNaN: 1)
     }
 
     private func isRetryable(_ error: NetworkError) -> Bool {
@@ -128,11 +126,11 @@ public struct ExponentialBackoffRetryPolicy: RetryPolicy {
               let value = response.value(forHeader: HTTPHeaderField.retryAfter)?.trimmingCharacters(in: .whitespaces) else {
             return nil
         }
-        if !value.isEmpty, value.allSatisfy({ $0.isASCII && $0.isWholeNumber }) {
+        if value.isASCIIDigits {
             return Double(value)
         }
         guard let retryDate = httpDate(from: value) else { return nil }
-        let reference = response.value(forHeader: HTTPHeaderField.date).flatMap(httpDate(from:)) ?? now()
+        let reference = response.value(forHeader: HTTPHeaderField.date).flatMap(httpDate(from:)) ?? dateProvider.now()
         return max(0, retryDate.timeIntervalSince(reference))
     }
 

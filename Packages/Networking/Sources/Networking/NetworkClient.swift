@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Utils
 
 public struct NetworkClient: HTTPClient {
     private let requestBuilder: any RequestBuilding

@@ -5,23 +5,25 @@
 //  Created by Kamil Misiag on 17/10/2026.
 //
 
+import Utils
+
 public struct CitySearchFlow: SearchStateResolving {
     private let search: any CitySearching
     private let normalizer: any SearchQueryNormalizing
-    private let delayer: any Delaying
+    private let sleeper: any Sleeping
     private let debounce: Duration
     private let failures: any SearchFailureClassifying
 
     public init(
         search: any CitySearching,
         normalizer: any SearchQueryNormalizing,
-        delayer: any Delaying,
+        sleeper: any Sleeping,
         debounce: Duration,
         failures: any SearchFailureClassifying
     ) {
         self.search = search
         self.normalizer = normalizer
-        self.delayer = delayer
+        self.sleeper = sleeper
         self.debounce = debounce
         self.failures = failures
     }
@@ -35,7 +37,7 @@ public struct CitySearchFlow: SearchStateResolving {
     public func resolvedState(for rawQuery: String, debounced: Bool) async -> CitySearchState? {
         guard let query = normalizer.normalizedQuery(from: rawQuery) else { return Task.isCancelled ? nil : .idle }
         if debounced {
-            try? await delayer.delay(for: debounce)
+            try? await sleeper.sleep(for: debounce)
         }
         guard !Task.isCancelled else { return nil }
         do {

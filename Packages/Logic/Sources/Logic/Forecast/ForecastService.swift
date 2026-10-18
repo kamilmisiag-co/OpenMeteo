@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Utils
 
 public struct ForecastService: ForecastProviding {
     private let weather: any WeatherForecasting

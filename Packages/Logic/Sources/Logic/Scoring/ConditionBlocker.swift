@@ -5,6 +5,8 @@
 //  Created by Kamil Misiag on 17/10/2026.
 //
 
+import Utils
+
 public struct ConditionBlocker: BlockingRule {
     public let kind: Factor.Kind
     private let conditions: Set<WeatherCondition>
@@ -15,6 +17,7 @@ public struct ConditionBlocker: BlockingRule {
     }
 
     public func blocks(day index: Int, in days: [DailyWeather]) -> Bool {
-        days.indices.contains(index) && conditions.contains(days[index].condition)
+        guard let day = days.element(at: index) else { return false }
+        return conditions.contains(day.condition)
     }
 }

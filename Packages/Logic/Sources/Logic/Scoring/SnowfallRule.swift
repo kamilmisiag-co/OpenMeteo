@@ -19,7 +19,7 @@ public struct SnowfallRule: FactorRule {
     public var kind: Factor.Kind { .snowfall }
 
     public func suitability(ofDay index: Int, in days: [DailyWeather]) -> Double? {
-        guard days.indices.contains(index) else { return nil }
-        return snowfallCurve.suitability(of: days[index].snowfallCm).clamped(to: 0...1)
+        guard let day = days.element(at: index) else { return nil }
+        return snowfallCurve.suitability(of: day.snowfallCm).clamped(to: 0...1)
     }
 }

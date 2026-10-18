@@ -21,8 +21,7 @@ public struct WindRule: FactorRule {
     public var kind: Factor.Kind { .wind }
 
     public func suitability(ofDay index: Int, in days: [DailyWeather]) -> Double? {
-        guard days.indices.contains(index) else { return nil }
-        let day = days[index]
+        guard let day = days.element(at: index) else { return nil }
         return min(speedCurve.suitability(of: day.windSpeedKmh), gustCurve.suitability(of: day.windGustsKmh)).clamped(to: 0...1)
     }
 }

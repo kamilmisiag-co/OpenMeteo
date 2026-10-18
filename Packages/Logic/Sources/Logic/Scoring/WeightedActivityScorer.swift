@@ -59,7 +59,7 @@ public struct WeightedActivityScorer: ActivityScoring {
 
     private func rating(by weighted: WeightedRule, ofDay index: Int, in days: [DailyWeather]) -> Rating? {
         guard let suitability = weighted.rule.suitability(ofDay: index, in: days) else { return nil }
-        let bounded = suitability.isNaN ? 0 : suitability.clamped(to: 0...1)
+        let bounded = suitability.clamped(to: 0...1, ifNaN: 0)
         let adjusted = switch polarity {
         case .direct: bounded
         case .inverted: 1 - bounded

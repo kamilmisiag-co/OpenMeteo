@@ -17,6 +17,48 @@ struct ClampedTests {
     }
 }
 
+@Suite("Clamped if NaN")
+struct NaNClampedTests {
+    @Test("NaN gives the fallback")
+    func nanFallback() {
+        #expect(Double.nan.clamped(to: 0...1, ifNaN: 0.5) == 0.5)
+        #expect(Double.nan.clamped(to: 0...1, ifNaN: 0) == 0)
+        #expect(Double.nan.clamped(to: 0...1, ifNaN: 1) == 1)
+        #expect(Double.signalingNaN.clamped(to: 0...1, ifNaN: 0.5) == 0.5)
+    }
+
+    @Test("A fallback outside the range is clamped too, so the result always lies in the range")
+    func fallbackOutsideRange() {
+        #expect(Double.nan.clamped(to: 0...1, ifNaN: 7) == 1)
+        #expect(Double.nan.clamped(to: 0...1, ifNaN: -3) == 0)
+        #expect(Double.nan.clamped(to: 0...1, ifNaN: .infinity) == 1)
+        #expect(Double.nan.clamped(to: 0...1, ifNaN: .nan) == 0)
+        #expect(Double.nan.clamped(to: 2...3, ifNaN: .nan) == 2)
+        #expect(Double(0.5).clamped(to: 0...1, ifNaN: .nan) == 0.5)
+    }
+
+    @Test("Infinities snap to the bounds of the range")
+    func infinities() {
+        #expect(Double.infinity.clamped(to: 0...1, ifNaN: 0.5) == 1)
+        #expect((-Double.infinity).clamped(to: 0...1, ifNaN: 0.5) == 0)
+    }
+
+    @Test("Finite values behave like clamped(to:)", arguments: zip([-5, 0, 0.25, 1, 3.5], [0, 0, 0.25, 1, 1]))
+    func finite(value: Double, expected: Double) {
+        #expect(value.clamped(to: 0...1, ifNaN: 0.5) == expected)
+        #expect(value.clamped(to: 0...1, ifNaN: 0.5) == value.clamped(to: 0...1))
+    }
+
+    @Test("Float values are clamped the same way")
+    func float() {
+        #expect(Float.nan.clamped(to: 0...1, ifNaN: 0.5) == 0.5)
+        #expect(Float.infinity.clamped(to: 0...1, ifNaN: 0.5) == 1)
+        #expect((-Float.infinity).clamped(to: 0...1, ifNaN: 0.5) == 0)
+        #expect(Float(0.75).clamped(to: 0...1, ifNaN: 0.5) == 0.75)
+        #expect(Float(-2).clamped(to: 0...1, ifNaN: 0.5) == 0)
+    }
+}
+
 @Suite("Uniqued")
 struct UniquedTests {
     @Test("The first element for each key is kept, in the original order")
@@ -39,6 +81,46 @@ struct UniquedTests {
         #expect(throws: URLError(.badURL)) {
             try [1, 2].uniqued { (_: Int) throws -> Int in throw URLError(.badURL) }
         }
+    }
+}
+
+@Suite("Element at index")
+struct ElementAtIndexTests {
+    private let values = [10, 20, 30]
+
+    @Test("An index inside the collection returns its element")
+    func inRange() {
+        #expect(values.element(at: 0) == 10)
+        #expect(values.element(at: 1) == 20)
+        #expect(values.element(at: 2) == 30)
+    }
+
+    @Test("Indices before the start or past the end return nil", arguments: [-1, -10, 3, 4])
+    func outOfRange(index: Int) {
+        #expect(values.element(at: index) == nil)
+    }
+
+    @Test("An empty collection has no element at any index")
+    func empty() {
+        #expect([Int]().element(at: 0) == nil)
+        #expect([Int]().element(at: -1) == nil)
+    }
+
+    @Test("A stored nil comes back wrapped, unlike a missing element")
+    func storedNil() {
+        let optionals: [Int?] = [nil, 1]
+        #expect(optionals.element(at: 0) == .some(nil))
+        #expect(optionals.element(at: 1) == .some(1))
+        #expect(optionals.element(at: 2) == nil)
+    }
+
+    @Test("A slice is looked up by its own indices, not from zero")
+    func slice() {
+        let slice = [10, 20, 30, 40][1...2]
+        #expect(slice.element(at: 0) == nil)
+        #expect(slice.element(at: 1) == 20)
+        #expect(slice.element(at: 2) == 30)
+        #expect(slice.element(at: 3) == nil)
     }
 }
 
@@ -139,6 +221,28 @@ struct StringTests {
         #expect("Lisbon".hasPrefixIgnoringCaseAndDiacritics("LIS"))
         #expect(!"Lisbon".hasPrefixIgnoringCaseAndDiacritics("bon"))
         #expect(!"Lisbon".hasPrefixIgnoringCaseAndDiacritics(""))
+    }
+}
+
+@Suite("ASCII digits")
+struct ASCIIDigitsTests {
+    @Test("Non-empty runs of 0 to 9 are ASCII digits", arguments: ["0", "0123456789"])
+    func digits(text: String) {
+        #expect(text.isASCIIDigits)
+    }
+
+    @Test("Empty text, signs, spaces, separators and non-ASCII digits are not", arguments: ["", "+1", "-1", " 1", "1.5", "١", "１", "½", "1\u{301}", "\r\n"])
+    func nonDigits(text: String) {
+        #expect(!text.isASCIIDigits)
+    }
+
+    @Test("A substring is checked by its own scalars only")
+    func substring() {
+        let date = "2026-10-18"
+        #expect(date.prefix(4).isASCIIDigits)
+        #expect(!date.prefix(5).isASCIIDigits)
+        #expect(date.split(separator: "-").map(\.isASCIIDigits) == [true, true, true])
+        #expect(!date.dropFirst(10).isASCIIDigits)
     }
 }
 
