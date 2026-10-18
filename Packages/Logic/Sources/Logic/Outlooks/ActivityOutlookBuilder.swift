@@ -24,7 +24,7 @@ public struct ActivityOutlookBuilder: OutlookBuilding {
     private func factors(in assessments: [DayAssessment]) -> [Factor] {
         Factor.Kind.allCases
             .compactMap { factor(of: $0, in: assessments) }
-            .sorted(by: Self.precedes)
+            .sorted(by: precedes)
     }
 
     private func factor(of kind: Factor.Kind, in assessments: [DayAssessment]) -> Factor? {
@@ -37,13 +37,13 @@ public struct ActivityOutlookBuilder: OutlookBuilding {
         return nil
     }
 
-    private static func precedes(_ lhs: Factor, _ rhs: Factor) -> Bool {
+    private func precedes(_ lhs: Factor, _ rhs: Factor) -> Bool {
         if lhs.effect != rhs.effect { return lhs.effect == .hurts }
         if lhs.days.count != rhs.days.count { return lhs.days.count > rhs.days.count }
         return position(of: lhs.kind) < position(of: rhs.kind)
     }
 
-    private static func position(of kind: Factor.Kind) -> Int {
+    private func position(of kind: Factor.Kind) -> Int {
         Factor.Kind.allCases.firstIndex(of: kind) ?? Factor.Kind.allCases.count
     }
 }

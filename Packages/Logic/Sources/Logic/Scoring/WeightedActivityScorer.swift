@@ -52,9 +52,9 @@ public struct WeightedActivityScorer: ActivityScoring {
     private func assessment(ofDay index: Int, in days: [DailyWeather]) -> DayAssessment {
         let ratings = rules.compactMap { rating(by: $0, ofDay: index, in: days) }
         guard let blocker = blockers.first(where: { $0.blocks(day: index, in: days) }) else {
-            return .scored(score(of: ratings), effects: effects(of: ratings))
+            return DayAssessment(score: score(of: ratings), effects: effects(of: ratings))
         }
-        return .blocked(by: blocker.kind, effects: effects(of: ratings))
+        return DayAssessment(blockedBy: blocker.kind, effects: effects(of: ratings))
     }
 
     private func rating(by weighted: WeightedRule, ofDay index: Int, in days: [DailyWeather]) -> Rating? {

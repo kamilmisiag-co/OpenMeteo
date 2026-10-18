@@ -30,7 +30,7 @@ struct ForecastServiceTests {
         }
 
         static func outlooks(for days: [DailyWeather]) -> [ActivityOutlook] {
-            [ActivityOutlook(activity: .surfing, days: days.map { .scored(Int($0.highCelsius), effects: [:]) }, factors: [])]
+            [ActivityOutlook(activity: .surfing, days: days.map { DayAssessment(score: Int($0.highCelsius), effects: [:]) }, factors: [])]
         }
     }
 

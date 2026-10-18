@@ -22,7 +22,7 @@ public struct ActivityRanker: ActivityRanking {
     public func rank(_ outlooks: [ActivityOutlook], onDay day: Int?) -> [RankedActivity] {
         outlooks
             .map { candidate(for: $0, onDay: day) }
-            .sorted(by: Self.precedes)
+            .sorted(by: precedes)
             .enumerated()
             .map { RankedActivity(rank: $0.offset + 1, outlook: $0.element.outlook, score: $0.element.score) }
     }
@@ -42,13 +42,13 @@ public struct ActivityRanker: ActivityRanking {
             ?? tieBreakOrder.count + (Activity.allCases.firstIndex(of: activity) ?? Activity.allCases.count)
     }
 
-    private static func precedes(_ lhs: Candidate, _ rhs: Candidate) -> Bool {
+    private func precedes(_ lhs: Candidate, _ rhs: Candidate) -> Bool {
         if let higher = higherFirst(lhs.score, rhs.score) { return higher }
         if lhs.score != nil, let higher = higherFirst(lhs.bestDayScore, rhs.bestDayScore) { return higher }
         return lhs.tieBreakPosition < rhs.tieBreakPosition
     }
 
-    private static func higherFirst(_ lhs: Int?, _ rhs: Int?) -> Bool? {
+    private func higherFirst(_ lhs: Int?, _ rhs: Int?) -> Bool? {
         switch (lhs, rhs) {
         case let (left?, right?): left == right ? nil : left > right
         case (.some, nil): true

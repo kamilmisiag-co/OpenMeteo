@@ -29,8 +29,8 @@ struct StandardScoringTests {
     @Test("A cool day with likely rain and strong wind is for sightseeing indoors")
     func wetWindyDay() {
         let day = [Fixtures.day(condition: .rain, high: 16, low: 9, rain: 0.8, wind: 32, gusts: 55)]
-        #expect(StandardRules.outdoorSightseeing.assess(day) == [.scored(38, effects: [.rain: .hurts, .temperature: .helps])])
-        #expect(StandardRules.indoorSightseeing.assess(day) == [.scored(74, effects: [.rain: .helps, .temperature: .hurts])])
+        #expect(StandardRules.outdoorSightseeing.assess(day) == [DayAssessment(score: 38, effects: [.rain: .hurts, .temperature: .helps])])
+        #expect(StandardRules.indoorSightseeing.assess(day) == [DayAssessment(score: 74, effects: [.rain: .helps, .temperature: .hurts])])
     }
 
     @Test("Skiing is ruled out without snow on the ground or falling")
@@ -68,7 +68,7 @@ struct StandardScoringTests {
     func surfingWind() {
         let calm = [Fixtures.day(high: 24, low: 17, rain: 0.1, wind: 10, gusts: 20)]
         let gale = [Fixtures.day(high: 24, low: 17, rain: 0.1, wind: 45, gusts: 70)]
-        #expect(StandardRules.surfing.assess(calm) == [.scored(100, effects: [.wind: .helps, .temperature: .helps, .rain: .helps])])
-        #expect(StandardRules.surfing.assess(gale) == [.scored(55, effects: [.wind: .hurts, .temperature: .helps, .rain: .helps])])
+        #expect(StandardRules.surfing.assess(calm) == [DayAssessment(score: 100, effects: [.wind: .helps, .temperature: .helps, .rain: .helps])])
+        #expect(StandardRules.surfing.assess(gale) == [DayAssessment(score: 55, effects: [.wind: .hurts, .temperature: .helps, .rain: .helps])])
     }
 }
