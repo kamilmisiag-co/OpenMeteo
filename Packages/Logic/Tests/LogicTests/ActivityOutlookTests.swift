@@ -54,6 +54,23 @@ struct ActivityOutlookTests {
         #expect(week.score(onDay: -1) == nil)
     }
 
+    @Test("The dominant blocker blocks the most days, and the first factor kind wins ties")
+    func dominantBlocker() {
+        let days = [
+            DayAssessment(blockedBy: .thunderstorm, effects: [:]),
+            DayAssessment(score: 80, effects: [:]),
+            DayAssessment(blockedBy: .snowfall, effects: [:]),
+            DayAssessment(blockedBy: .thunderstorm, effects: [:]),
+        ]
+        #expect(ActivityOutlook(activity: .skiing, days: days, factors: []).dominantBlocker == .thunderstorm)
+        #expect(ActivityOutlook(activity: .skiing, days: Array(days.prefix(3)), factors: []).dominantBlocker == .thunderstorm)
+        #expect(ActivityOutlook(activity: .skiing, days: Array(days.dropFirst()), factors: []).dominantBlocker == .thunderstorm)
+        #expect(ActivityOutlook(activity: .skiing, days: Array(days[1...2]), factors: []).dominantBlocker == .snowfall)
+        let windAndStorm = [DayAssessment(blockedBy: .thunderstorm, effects: [:]), DayAssessment(blockedBy: .wind, effects: [:])]
+        #expect(ActivityOutlook(activity: .surfing, days: windAndStorm, factors: []).dominantBlocker == .wind)
+        #expect(outlook(scores: [80, 60]).dominantBlocker == nil)
+    }
+
     private func outlook(scores: [Int?]) -> ActivityOutlook {
         let days = scores.map { score in
             score.map { DayAssessment(score: $0, effects: [:]) } ?? DayAssessment(blockedBy: .wind, effects: [:])

@@ -84,6 +84,150 @@ struct UniquedTests {
     }
 }
 
+@Suite("Uniqued elements")
+struct UniquedElementsTests {
+    @Test("Hashable elements keep their first occurrence, in order")
+    func keepsFirstOccurrence() {
+        #expect([3, 1, 3, 2, 1].uniqued() == [3, 1, 2])
+        #expect(["b", "a", "b"].uniqued() == ["b", "a"])
+        #expect([Int]().uniqued().isEmpty)
+    }
+}
+
+@Suite("Consecutive runs")
+struct ConsecutiveRunsTests {
+    @Test("Ascending neighbours join into one run and gaps start a new one")
+    func runs() {
+        #expect([0, 1, 2, 4, 6, 7].consecutiveRuns() == [0...2, 4...4, 6...7])
+        #expect([5].consecutiveRuns() == [5...5])
+        #expect([Int]().consecutiveRuns().isEmpty)
+    }
+
+    @Test("Values are sorted and repeats are ignored before runs are formed")
+    func unsortedInput() {
+        #expect([2, 2, 3].consecutiveRuns() == [2...3])
+        #expect([3, 2, 1, 7].consecutiveRuns() == [1...3, 7...7])
+    }
+
+    @Test("Values at the edges of the integer range do not overflow")
+    func edges() {
+        #expect([Int.max - 1, Int.max].consecutiveRuns() == [(Int.max - 1)...Int.max])
+        #expect([Int.max, Int.min].consecutiveRuns() == [Int.min...Int.min, Int.max...Int.max])
+        #expect([UInt8(0), 1, 255].consecutiveRuns() == [0...1, 255...255])
+    }
+}
+
+@Suite("Min and max")
+struct MinAndMaxTests {
+    @Test("The smallest and largest elements come back together")
+    func bounds() throws {
+        let bounds = try #require([4.5, -1, 9, 3].minAndMax())
+        #expect(bounds.min == -1)
+        #expect(bounds.max == 9)
+        let single = try #require(["m"].minAndMax())
+        #expect(single.min == "m" && single.max == "m")
+    }
+
+    @Test("An empty sequence has no bounds")
+    func empty() {
+        #expect([Int]().minAndMax() == nil)
+    }
+}
+
+@Suite("Most frequent case")
+struct MostFrequentCaseTests {
+    private enum Weather: CaseIterable, Hashable {
+        case rain, wind, snow
+    }
+
+    private enum Priority: CaseIterable, Hashable {
+        case low, high
+
+        static var allCases: [Priority] {
+            [.high, .low]
+        }
+    }
+
+    private enum Season: CaseIterable, Hashable {
+        case spring, autumn, winter
+
+        static var allCases: [Season] {
+            [.spring]
+        }
+    }
+
+    @Test("The case that occurs most often wins")
+    func mostFrequent() {
+        #expect([Weather.snow, .wind, .snow].mostFrequentCase() == .snow)
+        #expect([Weather.wind].mostFrequentCase() == .wind)
+    }
+
+    @Test("Ties go to the case listed first in allCases, whatever the order of occurrence")
+    func ties() {
+        #expect([Weather.snow, .wind, .wind, .snow].mostFrequentCase() == .wind)
+        #expect([Weather.snow, .rain].mostFrequentCase() == .rain)
+        #expect([Priority.low, .high].mostFrequentCase() == .high)
+    }
+
+    @Test("An empty sequence has no most frequent case")
+    func empty() {
+        #expect([Weather]().mostFrequentCase() == nil)
+    }
+
+    @Test("Only the cases listed in allCases are counted")
+    func unlistedCase() {
+        #expect([Season.autumn, .autumn, .spring].mostFrequentCase() == .spring)
+        #expect([Season.autumn, .winter].mostFrequentCase() == nil)
+    }
+}
+
+@Suite("Valid indices")
+struct ValidIndicesTests {
+    private let values = [10, 20, 30, 40]
+
+    @Test("Candidates come back sorted, without duplicates or indices outside the collection")
+    func filters() {
+        #expect(values.validIndices(among: [3, 1, 3, -1, 4, 0]) == [0, 1, 3])
+        #expect(values.validIndices(among: []).isEmpty)
+        #expect([Int]().validIndices(among: [0, 1]).isEmpty)
+    }
+
+    @Test("A slice keeps its own indices")
+    func slice() {
+        #expect(values[1...2].validIndices(among: [0, 1, 2, 3]) == [1, 2])
+    }
+}
+
+@Suite("Rounding")
+struct RoundingTests {
+    @Test("Rounded integers round halves away from zero and exist only for finite values in range", arguments: [
+        (22.5, 23),
+        (-2.5, -3),
+        (-0.4, 0),
+        (-3.6, -4),
+        (Double(Int.min), Int.min),
+        (Double(Int.max), nil),
+        (1e300, nil),
+    ] as [(Double, Int?)])
+    func roundedInt(value: Double, expected: Int?) {
+        #expect(value.roundedInt() == expected)
+    }
+
+    @Test("Values that are not finite have no rounded integer")
+    func nonFinite() {
+        #expect(Double.nan.roundedInt() == nil)
+        #expect(Double.infinity.roundedInt() == nil)
+        #expect((-Double.infinity).roundedInt() == nil)
+    }
+
+    @Test("Float values round the same way")
+    func float() {
+        #expect(Float(2.5).roundedInt() == 3)
+        #expect(Float(-0.6).roundedInt() == -1)
+        #expect(Float.nan.roundedInt() == nil)
+    }
+}
+
 @Suite("Element at index")
 struct ElementAtIndexTests {
     private let values = [10, 20, 30]

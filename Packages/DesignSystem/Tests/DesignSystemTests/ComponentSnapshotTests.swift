@@ -120,8 +120,8 @@ struct ComponentSnapshotTests {
     @Test func attributionFooter() {
         assertComponent(
             VStack(spacing: 16) {
-                AttributionFooter(updated: "09:42")
-                AttributionFooter()
+                AttributionFooter(updated: "09:42", link: URL(string: "https://open-meteo.com/"))
+                AttributionFooter(link: URL(string: "https://open-meteo.com/"))
             }
         )
     }
