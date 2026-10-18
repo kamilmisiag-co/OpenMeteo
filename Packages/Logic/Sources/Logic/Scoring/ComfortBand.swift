@@ -21,13 +21,13 @@ public struct ComfortBand: SuitabilityCurve {
     public func suitability(of value: Double) -> Double {
         if ideal.contains(value) { return 1 }
         return if value < ideal.lowerBound {
-            Self.falloff(ideal.lowerBound - value, over: ideal.lowerBound - zeroBelow)
+            falloff(ideal.lowerBound - value, over: ideal.lowerBound - zeroBelow)
         } else {
-            Self.falloff(value - ideal.upperBound, over: zeroAbove - ideal.upperBound)
+            falloff(value - ideal.upperBound, over: zeroAbove - ideal.upperBound)
         }
     }
 
-    private static func falloff(_ distance: Double, over span: Double) -> Double {
+    private func falloff(_ distance: Double, over span: Double) -> Double {
         guard span > 0 else { return 0 }
         let level = 1 - distance / span
         return level.isNaN ? 0 : level.clamped(to: 0...1)

@@ -56,7 +56,7 @@ struct ActivityOutlookTests {
 
     private func outlook(scores: [Int?]) -> ActivityOutlook {
         let days = scores.map { score in
-            score.map { DayAssessment.scored($0, effects: [:]) } ?? .blocked(by: .wind, effects: [:])
+            score.map { DayAssessment(score: $0, effects: [:]) } ?? DayAssessment(blockedBy: .wind, effects: [:])
         }
         return ActivityOutlook(activity: .surfing, days: days, factors: [])
     }

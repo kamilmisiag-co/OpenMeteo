@@ -25,7 +25,10 @@ struct CitySearchServiceTests {
     }
 
     private func service(using geocoder: MockCityGeocoder) -> CitySearchService {
-        CitySearchService(geocoder: geocoder, normalizer: CitySearchQueryNormalizer(minimumLength: 2, separators: [","]))
+        CitySearchService(
+            geocoder: geocoder,
+            normalizer: CitySearchQueryNormalizer(minimumLength: 2, separators: [","], invisibleScalars: StandardRules.queryInvisibleScalars)
+        )
     }
 
     @Test("Matching cities are returned with the normalized query that was sent to the geocoder")

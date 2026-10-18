@@ -23,7 +23,7 @@ struct ActivityOutlookBuilderTests {
         let activity: Activity
 
         func assess(_ days: [DailyWeather]) -> [DayAssessment] {
-            days.map { .scored(Int($0.highCelsius), effects: [:]) }
+            days.map { DayAssessment(score: Int($0.highCelsius), effects: [:]) }
         }
     }
 
@@ -42,9 +42,9 @@ struct ActivityOutlookBuilderTests {
     @Test("Keeps only the first scorer for an activity")
     func duplicateActivities() {
         let builder = ActivityOutlookBuilder(scorers: [
-            FixedScorer(activity: .surfing, assessments: [.scored(10, effects: [:])]),
-            FixedScorer(activity: .skiing, assessments: [.scored(20, effects: [:])]),
-            FixedScorer(activity: .surfing, assessments: [.scored(90, effects: [:])]),
+            FixedScorer(activity: .surfing, assessments: [DayAssessment(score: 10, effects: [:])]),
+            FixedScorer(activity: .skiing, assessments: [DayAssessment(score: 20, effects: [:])]),
+            FixedScorer(activity: .surfing, assessments: [DayAssessment(score: 90, effects: [:])]),
         ])
         let outlooks = builder.outlooks(for: threeDays)
         #expect(outlooks.map(\.activity) == [.surfing, .skiing])
@@ -66,10 +66,10 @@ struct ActivityOutlookBuilderTests {
     @Test("Assessments beyond the given days are dropped, along with their factors")
     func truncatesToDayCount() {
         let assessments: [DayAssessment] = [
-            .scored(60, effects: [.wind: .helps]),
-            .scored(70, effects: [:]),
-            .scored(80, effects: [.rain: .hurts]),
-            .scored(90, effects: [.wind: .hurts]),
+            DayAssessment(score: 60, effects: [.wind: .helps]),
+            DayAssessment(score: 70, effects: [:]),
+            DayAssessment(score: 80, effects: [.rain: .hurts]),
+            DayAssessment(score: 90, effects: [.wind: .hurts]),
         ]
         let builder = ActivityOutlookBuilder(scorers: [FixedScorer(activity: .surfing, assessments: assessments)])
         let outlook = builder.outlooks(for: Array(threeDays.prefix(2))).first
@@ -79,16 +79,16 @@ struct ActivityOutlookBuilderTests {
 
     @Test("A scorer that returns fewer assessments than days keeps what it returned")
     func shortAssessments() {
-        let builder = ActivityOutlookBuilder(scorers: [FixedScorer(activity: .skiing, assessments: [.scored(55, effects: [:])])])
+        let builder = ActivityOutlookBuilder(scorers: [FixedScorer(activity: .skiing, assessments: [DayAssessment(score: 55, effects: [:])])])
         #expect(builder.outlooks(for: threeDays).first?.dailyScores == [55])
     }
 
     @Test("A factor that hurts on any day reports only the days it hurts")
     func hurtingFactorWins() {
         let factors = reportedFactors(for: [
-            .scored(80, effects: [.wind: .helps]),
-            .scored(40, effects: [.wind: .hurts]),
-            .scored(30, effects: [.wind: .hurts]),
+            DayAssessment(score: 80, effects: [.wind: .helps]),
+            DayAssessment(score: 40, effects: [.wind: .hurts]),
+            DayAssessment(score: 30, effects: [.wind: .hurts]),
         ])
         #expect(factors == [Factor(kind: .wind, effect: .hurts, days: [1, 2])])
     }
@@ -96,9 +96,9 @@ struct ActivityOutlookBuilderTests {
     @Test("A factor that only helps reports the days it helps")
     func helpingFactor() {
         let factors = reportedFactors(for: [
-            .scored(80, effects: [.rain: .helps]),
-            .scored(70, effects: [:]),
-            .scored(90, effects: [.rain: .helps]),
+            DayAssessment(score: 80, effects: [.rain: .helps]),
+            DayAssessment(score: 70, effects: [:]),
+            DayAssessment(score: 90, effects: [.rain: .helps]),
         ])
         #expect(factors == [Factor(kind: .rain, effect: .helps, days: [0, 2])])
     }
@@ -106,24 +106,24 @@ struct ActivityOutlookBuilderTests {
     @Test("A blocked day counts as a hurting day for its blocker")
     func blockedDay() {
         let factors = reportedFactors(for: [
-            .scored(80, effects: [:]),
-            .blocked(by: .thunderstorm, effects: [.thunderstorm: .helps]),
+            DayAssessment(score: 80, effects: [:]),
+            DayAssessment(blockedBy: .thunderstorm, effects: [.thunderstorm: .helps]),
         ])
         #expect(factors == [Factor(kind: .thunderstorm, effect: .hurts, days: [1])])
     }
 
     @Test("Days without effects produce no factors")
     func noEffects() {
-        #expect(reportedFactors(for: [.scored(80, effects: [:]), .scored(60, effects: [:])]).isEmpty)
+        #expect(reportedFactors(for: [DayAssessment(score: 80, effects: [:]), DayAssessment(score: 60, effects: [:])]).isEmpty)
         #expect(reportedFactors(for: []).isEmpty)
     }
 
     @Test("Hurting factors come before helping ones, then the ones affecting more days, then the kind order")
     func factorOrder() {
         let factors = reportedFactors(for: [
-            .scored(50, effects: [.wind: .helps, .rain: .hurts, .temperature: .hurts, .snowfall: .helps]),
-            .scored(50, effects: [.wind: .helps, .temperature: .hurts, .thunderstorm: .hurts]),
-            .scored(50, effects: [.wind: .helps, .snowfall: .helps]),
+            DayAssessment(score: 50, effects: [.wind: .helps, .rain: .hurts, .temperature: .hurts, .snowfall: .helps]),
+            DayAssessment(score: 50, effects: [.wind: .helps, .temperature: .hurts, .thunderstorm: .hurts]),
+            DayAssessment(score: 50, effects: [.wind: .helps, .snowfall: .helps]),
         ])
         #expect(factors == [
             Factor(kind: .temperature, effect: .hurts, days: [0, 1]),
@@ -137,7 +137,7 @@ struct ActivityOutlookBuilderTests {
     @Test("Equal factors keep the kind order")
     func kindOrderOnTies() {
         let factors = reportedFactors(for: [
-            .scored(50, effects: [.snowfall: .hurts, .thunderstorm: .hurts, .temperature: .hurts, .rain: .hurts, .wind: .hurts]),
+            DayAssessment(score: 50, effects: [.snowfall: .hurts, .thunderstorm: .hurts, .temperature: .hurts, .rain: .hurts, .wind: .hurts]),
         ])
         #expect(factors.map(\.kind) == Factor.Kind.allCases)
     }

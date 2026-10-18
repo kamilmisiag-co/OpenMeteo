@@ -42,9 +42,9 @@ struct WeightedActivityScorerTests {
         let rule = StubRule(kind: .wind, weight: 1, ratings: [0.2, 0.9, nil, 0.5])
         let assessments = scorer([rule], blockers: [StubBlocker(kind: .thunderstorm, blockedDays: [1])]).assess(threeDays)
         #expect(assessments == [
-            .scored(20, effects: [.wind: .hurts]),
-            .blocked(by: .thunderstorm, effects: [.wind: .helps]),
-            .scored(0, effects: [:]),
+            DayAssessment(score: 20, effects: [.wind: .hurts]),
+            DayAssessment(blockedBy: .thunderstorm, effects: [.wind: .helps]),
+            DayAssessment(score: 0, effects: [:]),
         ])
         #expect(scorer([rule]).assess([]).isEmpty)
     }
@@ -56,7 +56,7 @@ struct WeightedActivityScorerTests {
             StubRule(kind: .rain, weight: 0.3, ratings: [0.5]),
             StubRule(kind: .temperature, weight: 0.2, ratings: [0.2]),
         ]
-        #expect(scorer(rules).assess(today) == [.scored(69, effects: [.wind: .helps, .temperature: .hurts])])
+        #expect(scorer(rules).assess(today) == [DayAssessment(score: 69, effects: [.wind: .helps, .temperature: .hurts])])
     }
 
     @Test("Rules without data are left out and the remaining weights renormalised")
@@ -66,7 +66,7 @@ struct WeightedActivityScorerTests {
             StubRule(kind: .wind, weight: 0.25, ratings: [0.8]),
             StubRule(kind: .temperature, weight: 0.25, ratings: [0.4]),
         ]
-        #expect(scorer(rules).assess(today) == [.scored(60, effects: [.wind: .helps, .temperature: .hurts])])
+        #expect(scorer(rules).assess(today) == [DayAssessment(score: 60, effects: [.wind: .helps, .temperature: .hurts])])
     }
 
     @Test("Negative and non-finite weights count as zero")
@@ -112,7 +112,7 @@ struct WeightedActivityScorerTests {
             StubRule(kind: .rain, weight: 0.3, ratings: [0.5]),
             StubRule(kind: .temperature, weight: 0.2, ratings: [0.2]),
         ]
-        #expect(scorer(rules, polarity: .inverted).assess(today) == [.scored(31, effects: [.wind: .hurts, .temperature: .helps])])
+        #expect(scorer(rules, polarity: .inverted).assess(today) == [DayAssessment(score: 31, effects: [.wind: .hurts, .temperature: .helps])])
     }
 
     @Test("The baseline lifts the floor and scales the rest of the range")
@@ -135,8 +135,8 @@ struct WeightedActivityScorerTests {
             StubRule(kind: .rain, weight: 1, ratings: [.nan]),
             StubRule(kind: .temperature, weight: 1, ratings: [-0.5]),
         ]
-        #expect(scorer(rules).assess(today) == [.scored(33, effects: [.wind: .helps, .rain: .hurts, .temperature: .hurts])])
-        #expect(scorer(rules, polarity: .inverted).assess(today) == [.scored(67, effects: [.wind: .hurts, .rain: .helps, .temperature: .helps])])
+        #expect(scorer(rules).assess(today) == [DayAssessment(score: 33, effects: [.wind: .helps, .rain: .hurts, .temperature: .hurts])])
+        #expect(scorer(rules, polarity: .inverted).assess(today) == [DayAssessment(score: 67, effects: [.wind: .hurts, .rain: .helps, .temperature: .helps])])
     }
 
     @Test("A factor helps from the helping threshold up, hurts below the hurting threshold and is left out in between")
@@ -186,7 +186,7 @@ struct WeightedActivityScorerTests {
             StubBlocker(kind: .thunderstorm, blockedDays: [0]),
             StubBlocker(kind: .snowfall, blockedDays: [0]),
         ]
-        #expect(scorer([], blockers: blockers).assess(today) == [.blocked(by: .thunderstorm, effects: [:])])
+        #expect(scorer([], blockers: blockers).assess(today) == [DayAssessment(blockedBy: .thunderstorm, effects: [:])])
     }
 
     private func scorer(
