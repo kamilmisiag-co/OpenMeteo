@@ -1,14 +1,14 @@
 //
-//  RecordingDelayer.swift
-//  LogicMocks
+//  RecordingSleeper.swift
+//  UtilsMocks
 //
-//  Created by Kamil Misiag on 17/10/2026.
+//  Created by Kamil Misiag on 18/10/2026.
 //
 
-import Logic
 import Synchronization
+import Utils
 
-public final class RecordingDelayer: Delaying {
+public final class RecordingSleeper: Sleeping {
     private let recorded = Mutex<[Duration]>([])
 
     public init() {}
@@ -17,7 +17,7 @@ public final class RecordingDelayer: Delaying {
         recorded.withLock { $0 }
     }
 
-    public func delay(for duration: Duration) async throws {
+    public func sleep(for duration: Duration) async throws {
         recorded.withLock { $0.append(duration) }
         try Task.checkCancellation()
     }

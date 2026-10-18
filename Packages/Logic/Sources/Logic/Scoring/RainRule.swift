@@ -21,8 +21,8 @@ public struct RainRule: FactorRule {
     public var kind: Factor.Kind { .rain }
 
     public func suitability(ofDay index: Int, in days: [DailyWeather]) -> Double? {
-        guard days.indices.contains(index), let probability = days[index].precipitationProbability else { return nil }
-        if let minimumHighCelsius, days[index].highCelsius <= minimumHighCelsius { return 1 }
+        guard let day = days.element(at: index), let probability = day.precipitationProbability else { return nil }
+        if let minimumHighCelsius, day.highCelsius <= minimumHighCelsius { return 1 }
         return probabilityCurve.suitability(of: probability.clamped(to: 0...1)).clamped(to: 0...1)
     }
 }

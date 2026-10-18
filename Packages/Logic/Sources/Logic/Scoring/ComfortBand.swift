@@ -30,6 +30,6 @@ public struct ComfortBand: SuitabilityCurve {
     private func falloff(_ distance: Double, over span: Double) -> Double {
         guard span > 0 else { return 0 }
         let level = 1 - distance / span
-        return level.isNaN ? 0 : level.clamped(to: 0...1)
+        return level.clamped(to: 0...1, ifNaN: 0)
     }
 }

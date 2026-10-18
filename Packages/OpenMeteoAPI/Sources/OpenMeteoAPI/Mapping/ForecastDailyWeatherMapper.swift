@@ -77,6 +77,6 @@ public struct ForecastDailyWeatherMapper: DailyWeatherMapping {
     }
 
     private func element<Value>(at index: Int, of values: [Value?]) -> Value? {
-        values.indices.contains(index) ? values[index] : nil
+        values.element(at: index) ?? nil
     }
 }

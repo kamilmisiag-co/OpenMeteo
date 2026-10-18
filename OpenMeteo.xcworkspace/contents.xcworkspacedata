@@ -19,4 +19,7 @@
    <FileRef
       location = "group:Packages/OpenMeteoAPI">
    </FileRef>
+   <FileRef
+      location = "group:Packages/Storage">
+   </FileRef>
 </Workspace>

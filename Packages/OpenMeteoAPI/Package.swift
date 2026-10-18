@@ -29,6 +29,7 @@ let package = Package(
                 .product(name: "NetworkingMocks", package: "Networking"),
                 .product(name: "Logic", package: "Logic"),
                 .product(name: "Utils", package: "Utils"),
+                .product(name: "UtilsMocks", package: "Utils"),
             ],
             resources: [.copy("Fixtures")],
         ),

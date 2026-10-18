@@ -21,7 +21,10 @@ let package = Package(
         ),
         .target(
             name: "NetworkingStubs",
-            dependencies: ["Networking"],
+            dependencies: [
+                "Networking",
+                .product(name: "Utils", package: "Utils"),
+            ],
         ),
         .target(
             name: "NetworkingMocks",
@@ -34,6 +37,7 @@ let package = Package(
                 "NetworkingStubs",
                 "NetworkingMocks",
                 .product(name: "Utils", package: "Utils"),
+                .product(name: "UtilsMocks", package: "Utils"),
             ],
         ),
     ]

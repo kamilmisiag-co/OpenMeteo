@@ -28,6 +28,7 @@ let package = Package(
                 "Logic",
                 "LogicMocks",
                 .product(name: "Utils", package: "Utils"),
+                .product(name: "UtilsMocks", package: "Utils"),
             ],
         ),
     ]

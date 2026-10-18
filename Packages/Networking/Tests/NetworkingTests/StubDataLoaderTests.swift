@@ -7,9 +7,10 @@
 
 import Foundation
 import Networking
-import NetworkingMocks
 import NetworkingStubs
 import Testing
+import Utils
+import UtilsMocks
 
 @Suite("Stub data loader")
 struct StubDataLoaderTests {
@@ -81,7 +82,7 @@ struct StubDataLoaderTests {
         let sleeper = RecordingSleeper()
         let stub = loader([NetworkStub(matcher: citiesMatcher, responses: [ok(Fixtures.lisbonJSON, delay: .milliseconds(800))])], sleeper: sleeper)
         _ = try await URLSessionTransport(loader: stub).send(try request("name=Lisbon"))
-        #expect(await sleeper.durations == [.milliseconds(800)])
+        #expect(sleeper.durations == [.milliseconds(800)])
     }
 
     @Test("Failure outcomes go through the real transport's error mapping")
@@ -109,7 +110,7 @@ struct StubDataLoaderTests {
             sleeper: sleeper
         )
         #expect(try await client.send(CityEndpoint(name: "Lisbon")) == Fixtures.lisbon)
-        #expect(await sleeper.durations == [.seconds(1)])
+        #expect(sleeper.durations == [.seconds(1)])
         #expect(await stub.receivedRequests.count == 2)
     }
 }

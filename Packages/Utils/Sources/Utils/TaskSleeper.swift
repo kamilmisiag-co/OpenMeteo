@@ -1,13 +1,9 @@
 //
-//  Sleeping.swift
-//  Networking
+//  TaskSleeper.swift
+//  Utils
 //
-//  Created by Kamil Misiag on 16/10/2026.
+//  Created by Kamil Misiag on 18/10/2026.
 //
-
-public protocol Sleeping: Sendable {
-    func sleep(for duration: Duration) async throws
-}
 
 public struct TaskSleeper: Sleeping {
     public init() {}

@@ -9,6 +9,7 @@ import Foundation
 import Networking
 import OpenMeteoAPI
 import Testing
+import UtilsMocks
 
 @Suite("Open-Meteo standard presets")
 struct OpenMeteoStandardTests {
@@ -139,7 +140,7 @@ struct OpenMeteoStandardTests {
     func retryAfterDate() throws {
         let get = try request(.get)
         let rateLimited = response(status: 429, retryAfter: "Thu, 01 Jan 1970 00:00:04 GMT")
-        let later = Fixtures.retryPolicy(now: { Date(timeIntervalSince1970: 1) })
+        let later = Fixtures.retryPolicy(dateProvider: ManualDateProvider(now: Date(timeIntervalSince1970: 1)))
         #expect(policy.delay(beforeRetry: 1, of: get, after: .unacceptableStatusCode(rateLimited)) == .seconds(4))
         #expect(later.delay(beforeRetry: 1, of: get, after: .unacceptableStatusCode(rateLimited)) == .seconds(3))
     }

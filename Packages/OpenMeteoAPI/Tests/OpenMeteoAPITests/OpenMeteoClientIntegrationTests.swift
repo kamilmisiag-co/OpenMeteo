@@ -12,6 +12,7 @@ import NetworkingMocks
 import OpenMeteoAPI
 import Testing
 import Utils
+import UtilsMocks
 
 @Suite("Open-Meteo client integration")
 struct OpenMeteoClientIntegrationTests {
@@ -41,7 +42,7 @@ struct OpenMeteoClientIntegrationTests {
         let requests = await transport.requests
         #expect(requests.map { $0.url?.absoluteString } == [Self.lisbonSearchURL])
         #expect(requests.first?.httpMethod == "GET")
-        #expect(await sleeper.durations.isEmpty)
+        #expect(sleeper.durations.isEmpty)
     }
 
     @Test("A name with diacritics and a space is percent-encoded on the wire")
@@ -69,7 +70,7 @@ struct OpenMeteoClientIntegrationTests {
         #expect(probabilities.count == Self.zakopanePrecipitationProbabilities.count)
         #expect(zip(probabilities, Self.zakopanePrecipitationProbabilities).allSatisfy { abs($0 - $1) < 1e-9 })
         #expect(await transport.requests.map { $0.url?.absoluteString } == [Self.zakopaneForecastURL])
-        #expect(await sleeper.durations.isEmpty)
+        #expect(sleeper.durations.isEmpty)
     }
 
     @Test("A city without a time zone asks for the automatic zone and its days follow the zone the response reports")
@@ -95,7 +96,7 @@ struct OpenMeteoClientIntegrationTests {
         let requests = await transport.requests
         #expect(requests.count == 2)
         #expect(requests.map { $0.url?.absoluteString } == [Self.zakopaneForecastURL, Self.zakopaneForecastURL])
-        #expect(await sleeper.durations == [.milliseconds(500)])
+        #expect(sleeper.durations == [.milliseconds(500)])
     }
 
     @Test("Three overloaded 503s use up both retries and fail with the last status")
@@ -109,7 +110,7 @@ struct OpenMeteoClientIntegrationTests {
         #expect(Fixtures.statusResponse(of: error)?.statusCode == 503)
         #expect(Fixtures.statusResponse(of: error)?.body == overloaded.body)
         #expect(await transport.requests.count == 3)
-        #expect(await sleeper.durations == [.milliseconds(500), .seconds(1)])
+        #expect(sleeper.durations == [.milliseconds(500), .seconds(1)])
     }
 
     @Test("A 400 bad forecast request fails at once without a retry")
@@ -123,7 +124,7 @@ struct OpenMeteoClientIntegrationTests {
         #expect(Fixtures.statusResponse(of: error)?.statusCode == 400)
         #expect(Fixtures.statusResponse(of: error)?.body == rejected.body)
         #expect(await transport.requests.count == 1)
-        #expect(await sleeper.durations.isEmpty)
+        #expect(sleeper.durations.isEmpty)
     }
 
     @Test("A rejected search fails at once without a retry")
@@ -137,7 +138,7 @@ struct OpenMeteoClientIntegrationTests {
         #expect(Fixtures.statusResponse(of: error)?.statusCode == 400)
         #expect(Fixtures.statusResponse(of: error)?.body == rejected.body)
         #expect(await transport.requests.count == 1)
-        #expect(await sleeper.durations.isEmpty)
+        #expect(sleeper.durations.isEmpty)
     }
 
     @Test("Being offline fails at once without a retry and reads as a connectivity error")
@@ -150,7 +151,7 @@ struct OpenMeteoClientIntegrationTests {
         #expect(Fixtures.urlErrorCode(of: error) == .notConnectedToInternet)
         #expect(error?.isConnectivity == true)
         #expect(await transport.requests.count == 1)
-        #expect(await sleeper.durations.isEmpty)
+        #expect(sleeper.durations.isEmpty)
     }
 
     @Test("A dropped connection is retried once after half a second and then succeeds")
@@ -163,7 +164,7 @@ struct OpenMeteoClientIntegrationTests {
 
         #expect(days.count == 7)
         #expect(await transport.requests.count == 2)
-        #expect(await sleeper.durations == [.milliseconds(500)])
+        #expect(sleeper.durations == [.milliseconds(500)])
     }
 
     @Test("A successful response whose body is not a forecast fails with a decoding error without a retry", arguments: [
@@ -178,7 +179,7 @@ struct OpenMeteoClientIntegrationTests {
 
         #expect(Self.isDecoding(error))
         #expect(await transport.requests.count == 1)
-        #expect(await sleeper.durations.isEmpty)
+        #expect(sleeper.durations.isEmpty)
     }
 
     @Test("A successful response with a truncated body fails with a decoding error without a retry")
@@ -192,7 +193,7 @@ struct OpenMeteoClientIntegrationTests {
 
         #expect(Self.isDecoding(error))
         #expect(await transport.requests.count == 1)
-        #expect(await sleeper.durations.isEmpty)
+        #expect(sleeper.durations.isEmpty)
     }
 
     private func geocoder(transport: MockHTTPTransport) throws -> OpenMeteoGeocoder {

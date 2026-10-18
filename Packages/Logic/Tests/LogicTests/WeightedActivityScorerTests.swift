@@ -7,6 +7,7 @@
 
 import Logic
 import Testing
+import Utils
 
 @Suite("Weighted activity scorer")
 struct WeightedActivityScorerTests {
@@ -16,7 +17,7 @@ struct WeightedActivityScorerTests {
         let ratings: [Double?]
 
         func suitability(ofDay index: Int, in days: [DailyWeather]) -> Double? {
-            ratings.indices.contains(index) ? ratings[index] : nil
+            ratings.element(at: index) ?? nil
         }
     }
 

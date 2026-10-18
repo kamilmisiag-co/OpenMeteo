@@ -7,8 +7,8 @@
 
 import Foundation
 import Networking
-import NetworkingMocks
 import Utils
+import UtilsMocks
 
 struct TestCity: Codable, Hashable, Sendable {
     let name: String
@@ -168,7 +168,7 @@ enum Fixtures {
             maximumDelay: .seconds(10),
             jitter: jitter,
             randomFraction: { randomFraction },
-            now: { now },
+            dateProvider: ManualDateProvider(now: now),
             retryableMethods: [.get, .head, .put, .delete],
             retryableStatusCodes: [429, 500, 502, 503, 504],
             retryableURLErrorCodes: [.timedOut, .networkConnectionLost, .notConnectedToInternet]

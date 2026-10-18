@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Utils
 
 public struct GregorianDayKeyParser: DayKeyExtracting, LocalMidnightParsing {
     public init() {}
@@ -15,11 +16,10 @@ public struct GregorianDayKeyParser: DayKeyExtracting, LocalMidnightParsing {
     }
 
     public func localMidnight(ofDayKey dayKey: String, in timeZone: TimeZone) -> Date? {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
+        let calendar = Calendar.gregorian(timeZone: timeZone)
         let parts = dayKey.split(separator: "-", omittingEmptySubsequences: false)
         guard parts.map(\.count) == [4, 2, 2],
-              parts.allSatisfy({ $0.allSatisfy { $0.isASCII && $0.isNumber } }),
+              parts.allSatisfy(\.isASCIIDigits),
               let year = Int(parts[0]),
               let month = Int(parts[1]),
               let day = Int(parts[2]),

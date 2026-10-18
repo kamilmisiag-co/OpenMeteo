@@ -19,7 +19,7 @@ public struct TemperatureRule: FactorRule {
     public var kind: Factor.Kind { .temperature }
 
     public func suitability(ofDay index: Int, in days: [DailyWeather]) -> Double? {
-        guard days.indices.contains(index) else { return nil }
-        return highCurve.suitability(of: days[index].highCelsius).clamped(to: 0...1)
+        guard let day = days.element(at: index) else { return nil }
+        return highCurve.suitability(of: day.highCelsius).clamped(to: 0...1)
     }
 }

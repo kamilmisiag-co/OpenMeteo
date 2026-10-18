@@ -11,6 +11,7 @@ import NetworkingMocks
 import Synchronization
 import Testing
 import Utils
+import UtilsMocks
 
 final class FixtureURLProtocol: URLProtocol {
     typealias Handler = @Sendable (URLRequest) throws -> (HTTPURLResponse, Data)
@@ -97,7 +98,7 @@ struct URLSessionIntegrationTests {
         )
         #expect(try await client.send(CityEndpoint(name: "Lisbon")) == Fixtures.lisbon)
         #expect(attempts.withLock { $0 } == 2)
-        #expect(await sleeper.durations == [.seconds(2)])
+        #expect(sleeper.durations == [.seconds(2)])
     }
 
     @Test("Losing the network surfaces as a connectivity error")
