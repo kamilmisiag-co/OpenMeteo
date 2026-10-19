@@ -26,4 +26,31 @@ extension Activity {
         case .indoorSightseeing: "building.columns.fill"
         }
     }
+
+    var helps: LocalizedStringResource {
+        switch self {
+        case .skiing: .activitySkiingHelps
+        case .surfing: .activitySurfingHelps
+        case .outdoorSightseeing: .activityOutdoorSightseeingHelps
+        case .indoorSightseeing: .activityIndoorSightseeingHelps
+        }
+    }
+
+    var hurts: LocalizedStringResource {
+        switch self {
+        case .skiing: .activitySkiingHurts
+        case .surfing: .activitySurfingHurts
+        case .outdoorSightseeing: .activityOutdoorSightseeingHurts
+        case .indoorSightseeing: .activityIndoorSightseeingHurts
+        }
+    }
+
+    var scoringNote: LocalizedStringResource {
+        switch self {
+        case .skiing: .activitySkiingScoringNote
+        case .surfing: .activitySurfingScoringNote
+        case .outdoorSightseeing: .activityOutdoorSightseeingScoringNote
+        case .indoorSightseeing: .activityIndoorSightseeingScoringNote
+        }
+    }
 }

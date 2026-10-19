@@ -26,6 +26,11 @@ final class AppNavigator {
         push(.ranking(city))
     }
 
+    @discardableResult
+    func showDetail(of activity: Activity, in city: City) -> Bool {
+        push(.detail(city, activity))
+    }
+
     func rankingViewModel(for city: City) -> RankingViewModel {
         if let viewModel = rankingViewModels[city.id] {
             return viewModel
@@ -49,7 +54,7 @@ final class AppNavigator {
 
     private static func city(of route: AppRoute) -> City {
         switch route {
-        case .ranking(let city): city
+        case .ranking(let city), .detail(let city, _): city
         }
     }
 }

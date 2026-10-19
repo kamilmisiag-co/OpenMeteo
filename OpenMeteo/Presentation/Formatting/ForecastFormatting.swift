@@ -9,9 +9,12 @@ import Foundation
 
 protocol ForecastFormatting {
     func temperature(_ celsius: Double) -> String
+    func temperatureRange(_ lowCelsius: Double, _ highCelsius: Double) -> String
     func speed(_ kmh: Double) -> String
+    func speedRange(_ lowKmh: Double, _ highKmh: Double) -> String
     func snowfall(_ centimetres: Double) -> String
     func percent(_ fraction: Double?) -> String
+    func percentRange(_ lowFraction: Double, _ highFraction: Double) -> String
     func isToday(_ date: Date, now: Date) -> Bool
     func shortDay(_ date: Date, now: Date) -> String
     func day(_ date: Date, now: Date) -> String

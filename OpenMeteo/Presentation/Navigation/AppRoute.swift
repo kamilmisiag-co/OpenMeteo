@@ -9,4 +9,5 @@ import Logic
 
 enum AppRoute: Hashable {
     case ranking(City)
+    case detail(City, Activity)
 }

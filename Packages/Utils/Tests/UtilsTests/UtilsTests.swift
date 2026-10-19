@@ -117,6 +117,23 @@ struct ConsecutiveRunsTests {
     }
 }
 
+@Suite("Min and max")
+struct MinAndMaxTests {
+    @Test("The smallest and largest elements come back together")
+    func bounds() throws {
+        let bounds = try #require([4.5, -1, 9, 3].minAndMax())
+        #expect(bounds.min == -1)
+        #expect(bounds.max == 9)
+        let single = try #require(["m"].minAndMax())
+        #expect(single.min == "m" && single.max == "m")
+    }
+
+    @Test("An empty sequence has no bounds")
+    func empty() {
+        #expect([Int]().minAndMax() == nil)
+    }
+}
+
 @Suite("Most frequent case")
 struct MostFrequentCaseTests {
     private enum Weather: CaseIterable, Hashable {

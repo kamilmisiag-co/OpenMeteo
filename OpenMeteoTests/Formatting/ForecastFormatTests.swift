@@ -32,6 +32,10 @@ struct ForecastFormatTests {
         String(localized: .formatDegrees(value))
     }
 
+    private func range(_ lower: String, _ upper: String) -> String {
+        String(localized: .formatRange(lower, upper))
+    }
+
     @Test("Temperatures use the locale's unit unless Settings override it, rounded to whole degrees", arguments: [
         ("en_GB", 23.0, 23),
         ("en_US", 23.0, 73),
@@ -46,6 +50,15 @@ struct ForecastFormatTests {
         #expect(format(locale).temperature(celsius) == degrees(expected))
     }
 
+    @Test("Temperature ranges show the lower number and the upper temperature", arguments: [
+        ("en_GB", 15.0, 24.0, "15", 24),
+        ("en_US", 15.0, 24.0, "59", 75),
+        ("en_GB", -5.0, 3.0, "-5", 3),
+    ])
+    func temperatureRange(locale: String, low: Double, high: Double, lower: String, upper: Int) {
+        #expect(format(locale).temperatureRange(low, high) == range(lower, degrees(upper)))
+    }
+
     @Test("Wind is km/h in metric locales and mph in the UK and the US, unless Settings override it", arguments: [
         ("en_IE", "14 km/h"),
         ("en_GB", "9 mph"),
@@ -54,6 +67,14 @@ struct ForecastFormatTests {
     ])
     func speed(locale: String, expected: String) {
         #expect(format(locale).speed(14) == expected)
+    }
+
+    @Test("Wind ranges show the lower number and the upper speed", arguments: [
+        ("en_IE", "10", "32 km/h"),
+        ("en_US", "6", "20 mph"),
+    ])
+    func speedRange(locale: String, lower: String, upper: String) {
+        #expect(format(locale).speedRange(10, 32) == range(lower, upper))
     }
 
     @Test("Snowfall is in inches only in the US, unless Settings override it, keeps one decimal rounded half away from zero, and is never negative", arguments: [
@@ -82,13 +103,32 @@ struct ForecastFormatTests {
         #expect(format("en_GB").percent(nil) == noValue)
     }
 
+    @Test("Percentage ranges show the lower number and the upper percentage", arguments: [
+        ("en_GB", 0.0, "0", "80%"),
+        ("de_DE", 0.2, "20", "80\u{00A0}%"),
+    ])
+    func percentRange(locale: String, low: Double, lower: String, upper: String) {
+        #expect(format(locale).percentRange(low, 0.8) == range(lower, upper))
+    }
+
+    @Test("Ranges collapse to one value when both ends round to the same")
+    func collapsedRanges() {
+        let irish = format("en_IE")
+        #expect(irish.temperatureRange(19.6, 20.4) == degrees(20))
+        #expect(irish.speedRange(10, 10.4) == "10 km/h")
+        #expect(irish.percentRange(0.496, 0.504) == "50%")
+    }
+
     @Test("Values that are not finite have no value")
     func nonFinite() {
         let english = format("en_GB")
         #expect(english.temperature(.nan) == noValue)
+        #expect(english.temperatureRange(.nan, 20) == noValue)
         #expect(english.speed(.infinity) == noValue)
+        #expect(english.speedRange(10, .infinity) == noValue)
         #expect(english.snowfall(.nan) == noValue)
         #expect(english.percent(.nan) == noValue)
+        #expect(english.percentRange(0.1, .nan) == noValue)
     }
 
     @Test("Today and day names follow the city's time zone, not the device's")

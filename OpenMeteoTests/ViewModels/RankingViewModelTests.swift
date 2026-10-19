@@ -34,9 +34,11 @@ struct RankingViewModelTests {
         let updater: ScriptedForecastStateUpdater
         let daySelector: ScriptedDaySelector
         let summarizer: ScriptedRankingSummarizer
+        let insights: ScriptedInsightProvider
         let freshness: ScriptedFreshnessEvaluator
         let clock: ManualClock
         let presenter: RecordingRankingPresenter
+        let detailPresenter: RecordingDetailPresenter
     }
 
     nonisolated private static let forecast = Fixtures.lisbonForecast()
@@ -49,6 +51,7 @@ struct RankingViewModelTests {
         selectedDay: 5,
         hasStrongTopPick: true
     )
+    nonisolated private static let insight = ActivityInsight(outlook: Fixtures.lisbonOutlooks[0], rank: 2, rankedCount: 4, dominantBlocker: .wind)
 
     nonisolated private static func shown(onDay day: Int?) -> ForecastState {
         .loaded(LoadedForecast(result: result, selectedDay: day))
@@ -57,23 +60,28 @@ struct RankingViewModelTests {
     private func makeHarness(
         steps: [ScriptedForecastLoader.Step] = [.init(outcome)],
         states: [ForecastState] = [loaded],
-        selections: [Int?] = []
+        selections: [Int?] = [],
+        insights: [Activity: ActivityInsight] = [:]
     ) -> Harness {
         let loader = ScriptedForecastLoader(steps: steps)
         let updater = ScriptedForecastStateUpdater(states: states)
         let daySelector = ScriptedDaySelector(selections: selections)
         let summarizer = ScriptedRankingSummarizer(summary: Self.summary)
+        let insightProvider = ScriptedInsightProvider(insights: insights)
         let freshness = ScriptedFreshnessEvaluator(freshness: Self.freshness)
         let clock = ManualClock(now: Fixtures.referenceNow)
         let presenter = RecordingRankingPresenter()
+        let detailPresenter = RecordingDetailPresenter()
         let dependencies = ViewModelFixtures.rankingDependencies(
             loader: loader,
             updater: updater,
             daySelector: daySelector,
             summarizer: summarizer,
+            insights: insightProvider,
             freshness: freshness,
             clock: clock,
-            presenter: presenter
+            presenter: presenter,
+            detailPresenter: detailPresenter
         )
         return Harness(
             viewModel: RankingViewModel(city: Fixtures.lisbon, dependencies: dependencies),
@@ -81,17 +89,20 @@ struct RankingViewModelTests {
             updater: updater,
             daySelector: daySelector,
             summarizer: summarizer,
+            insights: insightProvider,
             freshness: freshness,
             clock: clock,
-            presenter: presenter
+            presenter: presenter,
+            detailPresenter: detailPresenter
         )
     }
 
     private func loadedHarness(
         states: [ForecastState] = [loaded],
-        selections: [Int?] = []
+        selections: [Int?] = [],
+        insights: [Activity: ActivityInsight] = [:]
     ) async -> Harness {
-        let harness = makeHarness(states: states, selections: selections)
+        let harness = makeHarness(states: states, selections: selections, insights: insights)
         await harness.viewModel.load()
         return harness
     }
@@ -110,9 +121,12 @@ struct RankingViewModelTests {
         #expect(harness.viewModel.placeholder == RecordingRankingPresenter.labelledPlaceholder(for: Fixtures.lisbon))
         #expect(harness.viewModel.presentation == nil)
         #expect(harness.viewModel.failure == nil)
+        #expect(harness.viewModel.dayCount == ViewModelFixtures.standardDayCount)
+        #expect(harness.viewModel.detail(for: .surfing) == nil)
         #expect(harness.presenter.placeholderCities == [Fixtures.lisbon])
         #expect(harness.loader.requestedCities.isEmpty)
         #expect(harness.summarizer.calls.isEmpty)
+        #expect(harness.insights.calls.isEmpty)
         #expect(harness.presenter.requests.isEmpty)
     }
 
@@ -151,7 +165,19 @@ struct RankingViewModelTests {
         #expect(harness.viewModel.failure == failure)
         #expect(!harness.viewModel.isLoading)
         #expect(harness.viewModel.presentation == nil)
+        #expect(harness.viewModel.detail(for: .surfing) == nil)
+        #expect(harness.viewModel.dayCount == ViewModelFixtures.standardDayCount)
         #expect(harness.summarizer.calls.isEmpty)
+        #expect(harness.insights.calls.isEmpty)
+    }
+
+    @Test("The day count follows the shown forecast instead of the standard count")
+    func dayCountFromForecast() async {
+        let days = Fixtures.days(Array(Fixtures.lisbonWeather.prefix(5)))
+        let short = CityForecast(city: Fixtures.lisbon, days: days, outlooks: Fixtures.lisbonOutlooks, fetchedAt: Fixtures.referenceNow)
+        let harness = await loadedHarness(states: [.loaded(LoadedForecast(result: Fixtures.result(short), selectedDay: nil))])
+
+        #expect(harness.viewModel.dayCount == 5)
     }
 
     @Test("A load once the state has settled fetches nothing", arguments: [RankingViewModelTests.loaded, .failed(.offline)])
@@ -328,5 +354,27 @@ struct RankingViewModelTests {
         #expect(harness.viewModel.now == later)
         #expect(harness.viewModel.presentation == RecordingRankingPresenter.labelledPresentation(for: presentationRequest(now: later)))
         #expect(harness.freshness.calls == [.init(result: Self.result, now: later)])
+    }
+
+    @Test("Detail is the detail presenter's view of the provider's insight and the forecast's freshness")
+    func detail() async {
+        let harness = await loadedHarness(insights: [.surfing: Self.insight])
+
+        let detail = harness.viewModel.detail(for: .surfing)
+
+        let request = RecordingDetailPresenter.Request(insight: Self.insight, forecast: Self.forecast, freshness: Self.freshness, now: Fixtures.referenceNow)
+        #expect(detail == RecordingDetailPresenter.labelledDetail(for: request))
+        #expect(harness.detailPresenter.requests == [request])
+        #expect(harness.insights.calls == [.init(activity: .surfing, forecast: Self.forecast)])
+        #expect(harness.freshness.calls == [.init(result: Self.result, now: Fixtures.referenceNow)])
+    }
+
+    @Test("Detail is unavailable when the provider has no insight for the activity")
+    func detailWithoutInsight() async {
+        let harness = await loadedHarness(insights: [.surfing: Self.insight])
+
+        #expect(harness.viewModel.detail(for: .skiing) == nil)
+        #expect(harness.insights.calls == [.init(activity: .skiing, forecast: Self.forecast)])
+        #expect(harness.detailPresenter.requests.isEmpty)
     }
 }

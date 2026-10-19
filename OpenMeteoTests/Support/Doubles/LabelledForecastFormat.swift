@@ -20,8 +20,16 @@ final class LabelledForecastFormat: ForecastFormatting {
         "\(whole(celsius))°"
     }
 
+    func temperatureRange(_ lowCelsius: Double, _ highCelsius: Double) -> String {
+        "\(temperature(lowCelsius))..\(temperature(highCelsius))"
+    }
+
     func speed(_ kmh: Double) -> String {
         "\(whole(kmh)) kmh"
+    }
+
+    func speedRange(_ lowKmh: Double, _ highKmh: Double) -> String {
+        "\(speed(lowKmh))..\(speed(highKmh))"
     }
 
     func snowfall(_ centimetres: Double) -> String {
@@ -30,6 +38,10 @@ final class LabelledForecastFormat: ForecastFormatting {
 
     func percent(_ fraction: Double?) -> String {
         fraction.map { "\(whole($0 * 100))%" } ?? "no chance"
+    }
+
+    func percentRange(_ lowFraction: Double, _ highFraction: Double) -> String {
+        "\(percent(lowFraction))..\(percent(highFraction))"
     }
 
     func isToday(_ date: Date, now: Date) -> Bool {
