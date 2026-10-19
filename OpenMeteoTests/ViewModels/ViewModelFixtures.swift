@@ -13,6 +13,26 @@ enum ViewModelFixtures {
     static let debounce = Duration.milliseconds(250)
     static let progressDelay = Duration.milliseconds(300)
 
+    static func rankingDependencies(
+        loader: ScriptedForecastLoader = ScriptedForecastLoader(steps: []),
+        updater: ScriptedForecastStateUpdater = ScriptedForecastStateUpdater(),
+        daySelector: ScriptedDaySelector = ScriptedDaySelector(),
+        summarizer: ScriptedRankingSummarizer = ScriptedRankingSummarizer(summary: RankingSummary(ranking: [], selectedDay: nil, hasStrongTopPick: false)),
+        freshness: ScriptedFreshnessEvaluator = ScriptedFreshnessEvaluator(freshness: .fresh),
+        clock: ManualClock = ManualClock(now: Fixtures.referenceNow),
+        presenter: RecordingRankingPresenter = RecordingRankingPresenter()
+    ) -> RankingViewModel.Dependencies {
+        RankingViewModel.Dependencies(
+            loader: loader,
+            updater: updater,
+            daySelector: daySelector,
+            summarizer: summarizer,
+            freshness: freshness,
+            dates: clock,
+            presenter: presenter
+        )
+    }
+
     static func searchDependencies(
         resolver: SearchResolverDouble = SearchResolverDouble(immediate: { _, _ in nil }, resolution: { _ in nil }),
         recents: ScriptedRecentCitiesManager = ScriptedRecentCitiesManager(),

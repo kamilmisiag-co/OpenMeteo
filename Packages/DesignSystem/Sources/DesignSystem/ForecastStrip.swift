@@ -28,6 +28,7 @@ public struct ForecastStripDay: Identifiable, Hashable, Sendable {
 }
 
 public struct ForecastStrip: View {
+    let title: Text
     let days: [ForecastStripDay]
     @Binding var selection: Int?
 
@@ -35,13 +36,22 @@ public struct ForecastStrip: View {
     @ScaledMetric(relativeTo: .subheadline) private var scrollingColumnWidth: CGFloat = 64
 
     public init(days: [ForecastStripDay], selection: Binding<Int?>) {
+        self.init(titleText: Text(.forecastStripTitle), days: days, selection: selection)
+    }
+
+    public init(title: String, days: [ForecastStripDay], selection: Binding<Int?>) {
+        self.init(titleText: Text(title), days: days, selection: selection)
+    }
+
+    private init(titleText: Text, days: [ForecastStripDay], selection: Binding<Int?>) {
+        title = titleText
         self.days = days
         _selection = selection
     }
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(.forecastStripTitle)
+            title
                 .font(.subheadline.weight(.semibold))
                 .padding(.horizontal, 8)
                 .accessibilityAddTraits(.isHeader)

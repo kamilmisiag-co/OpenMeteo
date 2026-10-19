@@ -9,6 +9,8 @@ import Foundation
 
 enum AppStandard {
     static let searchProgressDelay = Duration.milliseconds(300)
+    static let precipitationLabelThreshold = 0.3
+    static let maximumReasonCauses = 2
     static let openMeteoURLString = "https://open-meteo.com"
     static let licenceURLString = "https://creativecommons.org/licenses/by/4.0/"
     static let geoNamesURLString = "https://www.geonames.org"

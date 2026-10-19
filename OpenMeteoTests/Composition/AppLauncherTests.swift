@@ -15,6 +15,7 @@ struct AppLauncherTests {
     private func makeSession() -> AppSession {
         AppSession(
             search: SearchViewModel(dependencies: ViewModelFixtures.searchDependencies()),
+            navigator: AppNavigator(rankings: CountingRankingViewModelFactory()),
             links: AttributionLinks(openMeteo: nil, licence: nil, geoNames: nil),
             dayCount: 7
         )

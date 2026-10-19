@@ -21,10 +21,16 @@ struct AppComposer: AppComposing {
     }
 
     func makeSession() throws -> AppSession {
-        SessionAssembler().makeSession(services: try services(locale: Locale.autoupdatingCurrent))
+        let locale = Locale.autoupdatingCurrent
+        let deviceTimeZone = TimeZone.autoupdatingCurrent
+        let services = try services(
+            locale: locale,
+            fallbackTimeZone: TimeZone(identifier: deviceTimeZone.identifier) ?? deviceTimeZone
+        )
+        return SessionAssembler().makeSession(services: services, locale: locale, deviceTimeZone: deviceTimeZone)
     }
 
-    private func services(locale: Locale) throws -> AppServices {
+    private func services(locale: Locale, fallbackTimeZone: TimeZone) throws -> AppServices {
         let dates = SystemDateProvider()
         let sleeper = TaskSleeper()
         let transport = URLSessionTransport(loader: urlSession())
@@ -33,6 +39,7 @@ struct AppComposer: AppComposing {
             LoggingNetworkObserver(logger: Logger(subsystem: logSubsystem, category: AppStandard.networkLogCategory)),
         ]
         let geocodingClient = try client(host: OpenMeteoStandard.geocodingHost, transport: transport, retryPolicy: retryPolicy, sleeper: sleeper, observers: observers)
+        let forecastClient = try client(host: OpenMeteoStandard.forecastHost, transport: transport, retryPolicy: retryPolicy, sleeper: sleeper, observers: observers)
         let storageReporter = LoggerStorageFailureReporter(
             logger: Logger(subsystem: logSubsystem, category: AppStandard.storageLogCategory)
         )
@@ -42,6 +49,17 @@ struct AppComposer: AppComposing {
             invisibleScalars: StandardRules.queryInvisibleScalars
         )
         return AppServices(
+            forecasts: ForecastService(
+                weather: forecaster(client: forecastClient, fallbackTimeZone: fallbackTimeZone),
+                cache: CodableWeatherCache(
+                    records: records(in: .cachesDirectory, named: StorageStandard.weatherCacheDirectoryName, reporter: storageReporter),
+                    keys: PrefixedCityKey(prefix: StorageStandard.weatherKeyPrefix)
+                ),
+                window: UpcomingDaysWindow(dayCount: StandardRules.forecastDayCount, fallbackTimeZone: fallbackTimeZone),
+                outlookBuilder: ActivityOutlookBuilder(scorers: StandardRules.scorers),
+                fallbackPolicy: ConnectivityFallbackPolicy(),
+                dateProvider: dates
+            ),
             citySearch: CitySearchService(geocoder: geocoder(client: geocodingClient, locale: locale), normalizer: normalizer),
             queryNormalizer: normalizer,
             recents: RecentCitiesService(
@@ -51,7 +69,9 @@ struct AppComposer: AppComposing {
                 ),
                 maximumCount: StandardRules.maximumRecentCities
             ),
+            dates: dates,
             sleeper: sleeper,
+            fallbackTimeZone: fallbackTimeZone,
             dayCount: StandardRules.forecastDayCount
         )
     }
@@ -121,6 +141,26 @@ struct AppComposer: AppComposing {
                 languageCodes: LocaleLanguageCodeProvider(locale: locale, fallbackLanguageCode: OpenMeteoStandard.fallbackLanguageCode)
             ),
             mapper: GeocodingCityMapper(regionNames: LocaleRegionNameProvider(locale: locale))
+        )
+    }
+
+    private func forecaster(client: any HTTPClient, fallbackTimeZone: TimeZone) -> any WeatherForecasting {
+        OpenMeteoWeatherForecaster(
+            client: client,
+            requests: ForecastRequestFactory(
+                dayCounts: PaddedForecastDayCount(
+                    additionalDays: OpenMeteoStandard.additionalForecastDays,
+                    maximumDays: OpenMeteoStandard.maximumForecastDays
+                ),
+                fallbackTimeZoneIdentifier: fallbackTimeZone.identifier
+            ),
+            mapper: ForecastDailyWeatherMapper(
+                weatherCodes: WMOWeatherCodeMapper(),
+                timeZones: ResponseTimeZoneResolver(fallbackTimeZone: fallbackTimeZone),
+                dayKeys: GregorianDayKeyParser(),
+                snowDepths: HourlySnowDepthAggregator(),
+                units: OpenMeteoStandard.forecastUnits
+            )
         )
     }
 
