@@ -12,7 +12,9 @@ import SwiftUI
 struct RankingScreen: View {
     let viewModel: RankingViewModel
     let links: AttributionLinks
+    let onSelect: (Activity) -> Void
 
+    @State private var isShowingHowScores = false
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -22,6 +24,16 @@ struct RankingScreen: View {
         content(presentation)
             .navigationTitle(shown.title)
             .navigationSubtitle(shown.subtitle)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(.howScoresTitle, systemImage: "info.circle") {
+                        isShowingHowScores = true
+                    }
+                }
+            }
+            .sheet(isPresented: $isShowingHowScores) {
+                HowScoresSheet(dayCount: viewModel.dayCount, links: links)
+            }
             .task {
                 await viewModel.load()
             }
@@ -49,7 +61,8 @@ struct RankingScreen: View {
                     get: { presentation.selectedDay },
                     set: { day in animated { viewModel.select(day: day) } }
                 ),
-                onShowWeek: { animated { viewModel.showWeek() } }
+                onShowWeek: { animated { viewModel.showWeek() } },
+                onSelect: onSelect
             )
             .refreshable {
                 await viewModel.refresh()
@@ -59,7 +72,8 @@ struct RankingScreen: View {
                 presentation: viewModel.placeholder,
                 openMeteo: links.openMeteo,
                 selection: .constant(nil),
-                onShowWeek: {}
+                onShowWeek: {},
+                onSelect: { _ in }
             )
             .redacted(reason: .placeholder)
             .allowsHitTesting(false)

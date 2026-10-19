@@ -15,6 +15,7 @@ struct RankingList: View {
     let openMeteo: URL?
     @Binding var selection: Int?
     let onShowWeek: () -> Void
+    let onSelect: (Activity) -> Void
 
     var body: some View {
         List {
@@ -33,17 +34,21 @@ struct RankingList: View {
 
             Section {
                 if let topPick = presentation.topPick {
-                    TopPickCard(
-                        title: topPick.title,
-                        systemImage: topPick.systemImage,
-                        reason: topPick.reason,
-                        score: topPick.score,
-                        dailyScores: topPick.dailyScores,
-                        eyebrow: presentation.eyebrow,
-                        dayInitials: presentation.dayInitials,
-                        selectedDay: presentation.selectedDay,
-                        bestDay: presentation.bestDay
-                    )
+                    DisclosureButton {
+                        onSelect(topPick.activity)
+                    } label: {
+                        TopPickCard(
+                            title: topPick.title,
+                            systemImage: topPick.systemImage,
+                            reason: topPick.reason,
+                            score: topPick.score,
+                            dailyScores: topPick.dailyScores,
+                            eyebrow: presentation.eyebrow,
+                            dayInitials: presentation.dayInitials,
+                            selectedDay: presentation.selectedDay,
+                            bestDay: presentation.bestDay
+                        )
+                    }
                 }
             } header: {
                 SectionHeader {
@@ -58,15 +63,19 @@ struct RankingList: View {
 
             Section {
                 ForEach(presentation.others) { item in
-                    RankingRow(
-                        rank: item.rank,
-                        title: item.title,
-                        systemImage: item.systemImage,
-                        reason: item.reason,
-                        score: item.score,
-                        dailyScores: item.dailyScores,
-                        selectedDay: presentation.selectedDay
-                    )
+                    DisclosureButton {
+                        onSelect(item.activity)
+                    } label: {
+                        RankingRow(
+                            rank: item.rank,
+                            title: item.title,
+                            systemImage: item.systemImage,
+                            reason: item.reason,
+                            score: item.score,
+                            dailyScores: item.dailyScores,
+                            selectedDay: presentation.selectedDay
+                        )
+                    }
                 }
             } footer: {
                 AttributionFooter(updated: presentation.updated, link: openMeteo)

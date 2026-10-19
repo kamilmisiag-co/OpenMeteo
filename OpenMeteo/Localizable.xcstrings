@@ -1,6 +1,39 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "activity.indoorSightseeing.helps": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "rain, wind, heat or cold"
+          }
+        }
+      }
+    },
+    "activity.indoorSightseeing.hurts": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "clear, mild days"
+          }
+        }
+      }
+    },
+    "activity.indoorSightseeing.scoringNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scores use rain, wind and temperature: the worse it is outside, the better indoor plans score."
+          }
+        }
+      }
+    },
     "activity.indoorSightseeing.title": {
       "extractionState": "manual",
       "localizations": {
@@ -8,6 +41,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Indoor sightseeing"
+          }
+        }
+      }
+    },
+    "activity.outdoorSightseeing.helps": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "sunshine, mild highs"
+          }
+        }
+      }
+    },
+    "activity.outdoorSightseeing.hurts": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "rain, strong wind, heat"
+          }
+        }
+      }
+    },
+    "activity.outdoorSightseeing.scoringNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scores use rain, wind and temperature from the daily forecast."
           }
         }
       }
@@ -23,6 +89,39 @@
         }
       }
     },
+    "activity.skiing.helps": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "fresh snow, sub-zero temperatures"
+          }
+        }
+      }
+    },
+    "activity.skiing.hurts": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "rain, warm highs, strong wind"
+          }
+        }
+      }
+    },
+    "activity.skiing.scoringNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scores use temperature, fresh snow, wind and rain. A day is not suitable without 10 cm of snow on the ground or 1 cm of fresh snow."
+          }
+        }
+      }
+    },
     "activity.skiing.title": {
       "extractionState": "manual",
       "localizations": {
@@ -30,6 +129,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Skiing"
+          }
+        }
+      }
+    },
+    "activity.surfing.helps": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "light wind, dry and mild days"
+          }
+        }
+      }
+    },
+    "activity.surfing.hurts": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "strong wind and gusts, rain, storms"
+          }
+        }
+      }
+    },
+    "activity.surfing.scoringNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scores use wind, rain and temperature from the daily forecast. Thunderstorms make a day unsuitable. Wave height is not included."
           }
         }
       }
@@ -254,6 +386,204 @@
         }
       }
     },
+    "detail.bestDay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Best on %@ · %lld"
+          }
+        }
+      }
+    },
+    "detail.bestDayToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Best today · %lld"
+          }
+        }
+      }
+    },
+    "detail.chart.barAccessibility": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "detail.chart.barValue": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld, %@"
+          }
+        }
+      }
+    },
+    "detail.chart.best": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Best"
+          }
+        }
+      }
+    },
+    "detail.chart.day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day"
+          }
+        }
+      }
+    },
+    "detail.chart.empty.other": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No suitable days this week"
+          }
+        }
+      }
+    },
+    "detail.chart.empty.snowfall": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No skiable days this week"
+          }
+        }
+      }
+    },
+    "detail.chart.empty.thunderstorm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thunderstorms every day this week"
+          }
+        }
+      }
+    },
+    "detail.chart.header": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily score"
+          }
+        }
+      }
+    },
+    "detail.chart.score": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Score"
+          }
+        }
+      }
+    },
+    "detail.chart.week": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Week"
+          }
+        }
+      }
+    },
+    "detail.chart.weekValue": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Week %lld"
+          }
+        }
+      }
+    },
+    "detail.days.header": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day by day"
+          }
+        }
+      }
+    },
+    "detail.factors.header": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What drives this week"
+          }
+        }
+      }
+    },
+    "detail.rank": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ranked #%lld of %lld this week"
+          }
+        }
+      }
+    },
+    "detail.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %@ – %@"
+          }
+        }
+      }
+    },
+    "detail.unavailable.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No forecast for this activity"
+          }
+        }
+      }
+    },
     "factor.rain.cause": {
       "extractionState": "manual",
       "localizations": {
@@ -261,6 +591,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "rain"
+          }
+        }
+      }
+    },
+    "factor.rain.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ chance · %2$@"
+          }
+        }
+      }
+    },
+    "factor.rain.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rain chance"
           }
         }
       }
@@ -276,6 +628,39 @@
         }
       }
     },
+    "factor.snowfall.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ fresh snow · %2$@"
+          }
+        }
+      }
+    },
+    "factor.snowfall.summary.blocked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not enough snow · %@"
+          }
+        }
+      }
+    },
+    "factor.snowfall.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snowfall"
+          }
+        }
+      }
+    },
     "factor.temperature.cause": {
       "extractionState": "manual",
       "localizations": {
@@ -283,6 +668,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "temperature"
+          }
+        }
+      }
+    },
+    "factor.temperature.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Highs %1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "factor.temperature.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Air temperature"
           }
         }
       }
@@ -298,6 +705,28 @@
         }
       }
     },
+    "factor.thunderstorm.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forecast · %@"
+          }
+        }
+      }
+    },
+    "factor.thunderstorm.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thunderstorms"
+          }
+        }
+      }
+    },
     "factor.wind.cause": {
       "extractionState": "manual",
       "localizations": {
@@ -305,6 +734,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "wind"
+          }
+        }
+      }
+    },
+    "factor.wind.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up to %1$@, gusts %2$@ · %3$@"
+          }
+        }
+      }
+    },
+    "factor.wind.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wind"
           }
         }
       }
@@ -327,6 +778,216 @@
           "stringUnit": {
             "state": "translated",
             "value": "–"
+          }
+        }
+      }
+    },
+    "format.range": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@–%2$@"
+          }
+        }
+      }
+    },
+    "howScores.activities.header": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What each activity looks for"
+          }
+        }
+      }
+    },
+    "howScores.activities.helps": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helps:"
+          }
+        }
+      }
+    },
+    "howScores.activities.hurts": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hurts:"
+          }
+        }
+      }
+    },
+    "howScores.assumptions.header": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Assumptions"
+          }
+        }
+      }
+    },
+    "howScores.assumptions.surf": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Surf scores use wind and weather only; wave height is not included."
+          }
+        }
+      }
+    },
+    "howScores.assumptions.timeZone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Days follow the city’s local time zone."
+          }
+        }
+      }
+    },
+    "howScores.assumptions.units": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Units follow your device settings."
+          }
+        }
+      }
+    },
+    "howScores.data.derived": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activity scores are derived from Open-Meteo data."
+          }
+        }
+      }
+    },
+    "howScores.data.geoNames": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Location data based on GeoNames"
+          }
+        }
+      }
+    },
+    "howScores.data.header": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data"
+          }
+        }
+      }
+    },
+    "howScores.data.licence": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licensed under CC BY 4.0"
+          }
+        }
+      }
+    },
+    "howScores.data.openMeteo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weather data by Open-Meteo.com (CC BY 4.0)"
+          }
+        }
+      }
+    },
+    "howScores.done": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "howScores.intro": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Each activity gets a score from 0 to 100 for every day, from that day’s forecast. The score for the period is the mean of its %lld day, and activities are ranked by it."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Each activity gets a score from 0 to 100 for every day, from that day’s forecast. The weekly score is the mean of the %lld days, and activities are ranked by it."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "howScores.ratings.header": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ratings"
+          }
+        }
+      }
+    },
+    "howScores.ratings.notSuitable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hard blocker, such as no snow for skiing"
+          }
+        }
+      }
+    },
+    "howScores.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How scores work"
           }
         }
       }

@@ -17,9 +17,12 @@ final class RankingViewModel {
         let updater: any ForecastStateUpdating
         let daySelector: any DaySelecting
         let summarizer: any RankingSummarizing
+        let insights: any ActivityInsightProviding
         let freshness: any FreshnessEvaluating
         let dates: any DateProviding
         let presenter: any RankingPresenting
+        let detailPresenter: any ActivityDetailPresenting
+        let standardDayCount: Int
     }
 
     let city: City
@@ -52,6 +55,8 @@ final class RankingViewModel {
         guard case .failed(let failure) = state else { return nil }
         return failure
     }
+
+    var dayCount: Int { state.loadedForecast?.result.forecast.days.count ?? dependencies.standardDayCount }
 
     var isLoading: Bool { state == .loading }
 
@@ -87,6 +92,13 @@ final class RankingViewModel {
 
     func updateClock() {
         now = dependencies.dates.now()
+    }
+
+    func detail(for activity: Activity) -> ActivityDetail? {
+        guard let loaded = state.loadedForecast else { return nil }
+        let forecast = loaded.result.forecast
+        guard let insight = dependencies.insights.insight(for: activity, in: forecast) else { return nil }
+        return dependencies.detailPresenter.detail(for: insight, in: forecast, freshness: freshness(of: loaded.result), now: now)
     }
 
     private func fetch() async {

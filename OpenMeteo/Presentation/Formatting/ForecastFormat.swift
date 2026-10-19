@@ -36,9 +36,21 @@ struct ForecastFormat: ForecastFormatting {
         return String(localized: .formatDegrees(degrees))
     }
 
+    func temperatureRange(_ lowCelsius: Double, _ highCelsius: Double) -> String {
+        guard let low = degrees(lowCelsius), let high = degrees(highCelsius) else { return noValue }
+        let upper = String(localized: .formatDegrees(high))
+        return low == high ? upper : range(number(low), upper)
+    }
+
     func speed(_ kmh: Double) -> String {
         guard let value = speedValue(kmh) else { return noValue }
         return measurement(Double(value), unit: speedUnit, maximumFractionDigits: 0)
+    }
+
+    func speedRange(_ lowKmh: Double, _ highKmh: Double) -> String {
+        guard let low = speedValue(lowKmh), let high = speedValue(highKmh) else { return noValue }
+        let upper = measurement(Double(high), unit: speedUnit, maximumFractionDigits: 0)
+        return low == high ? upper : range(number(low), upper)
     }
 
     func snowfall(_ centimetres: Double) -> String {
@@ -50,6 +62,12 @@ struct ForecastFormat: ForecastFormatting {
     func percent(_ fraction: Double?) -> String {
         guard let value = fraction.flatMap(percentValue) else { return noValue }
         return value.formatted(.percent.locale(locale))
+    }
+
+    func percentRange(_ lowFraction: Double, _ highFraction: Double) -> String {
+        guard let low = percentValue(lowFraction), let high = percentValue(highFraction) else { return noValue }
+        let upper = high.formatted(.percent.locale(locale))
+        return low == high ? upper : range(number(low), upper)
     }
 
     func isToday(_ date: Date, now: Date) -> Bool {
@@ -110,6 +128,14 @@ struct ForecastFormat: ForecastFormatting {
 
     private func percentValue(_ fraction: Double) -> Int? {
         (fraction * 100).roundedInt()
+    }
+
+    private func number(_ value: Int) -> String {
+        value.formatted(.number.locale(locale))
+    }
+
+    private func range(_ lower: String, _ upper: String) -> String {
+        String(localized: .formatRange(lower, upper))
     }
 
     private func converted<UnitType: Dimension>(_ value: Double, from source: UnitType, to target: UnitType) -> Double {

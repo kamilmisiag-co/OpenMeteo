@@ -58,6 +58,7 @@ struct SessionAssembler {
             updater: ForecastStateUpdater(days: DateMatchingDaySelection()),
             daySelector: ToggleDaySelector(),
             summarizer: RankingSummarizer(ranker: ranker, strongScoreThreshold: StandardRules.strongScoreThreshold),
+            insights: ActivityInsightBuilder(ranker: ranker),
             freshness: FreshnessEvaluator(staleAfter: StandardRules.staleAfter),
             dates: services.dates,
             presenter: RankingPresenter(
@@ -68,7 +69,16 @@ struct SessionAssembler {
                 fallbackTimeZone: services.fallbackTimeZone,
                 precipitationLabelThreshold: AppStandard.precipitationLabelThreshold,
                 placeholderDayCount: services.dayCount
-            )
+            ),
+            detailPresenter: ActivityDetailPresenter(
+                formats: formats,
+                reasons: reasons,
+                factors: FactorSummaryWriter(dayRanges: dayRanges),
+                captions: captions,
+                banners: banners,
+                fallbackTimeZone: services.fallbackTimeZone
+            ),
+            standardDayCount: services.dayCount
         )
     }
 }

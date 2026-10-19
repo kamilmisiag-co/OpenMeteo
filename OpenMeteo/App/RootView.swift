@@ -33,6 +33,14 @@ struct RootView: View {
             RankingScreen(
                 viewModel: session.navigator.rankingViewModel(for: city),
                 links: session.links
+            ) { activity in
+                session.navigator.showDetail(of: activity, in: city)
+            }
+        case .detail(let city, let activity):
+            ActivityDetailScreen(
+                viewModel: session.navigator.rankingViewModel(for: city),
+                activity: activity,
+                links: session.links
             )
         }
     }

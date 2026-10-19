@@ -25,6 +25,7 @@ struct RankingViewModelFactoryTests {
         #expect(lisbon !== bergen)
         #expect(lisbon.city == Fixtures.lisbon)
         #expect(bergen.city == Fixtures.bergen)
+        #expect(bergen.dayCount == ViewModelFixtures.standardDayCount)
         #expect(presenter.placeholderCities == [Fixtures.lisbon, Fixtures.bergen])
         #expect(loader.requestedCities == [Fixtures.bergen])
     }
