@@ -8,6 +8,12 @@
 import Foundation
 import Utils
 
+public protocol DayWindowing: Sendable {
+    var dayCount: Int { get }
+
+    func upcomingDays(_ days: [DailyWeather], in city: City, now: Date) -> [DailyWeather]
+}
+
 public struct UpcomingDaysWindow: DayWindowing {
     public let dayCount: Int
     private let fallbackTimeZone: TimeZone
@@ -24,6 +30,6 @@ public struct UpcomingDaysWindow: DayWindowing {
             .filter { calendar.startOfDay(for: $0.date) >= today }
             .sorted { $0.date < $1.date }
             .uniqued { calendar.startOfDay(for: $0.date) }
-        return Array(upcoming.prefix(max(dayCount, 0)))
+        return Array(upcoming.prefix(dayCount))
     }
 }

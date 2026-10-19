@@ -8,6 +8,10 @@
 import Foundation
 import Utils
 
+public protocol ForecastProviding: Sendable {
+    func forecast(for city: City) async throws -> ForecastResult
+}
+
 public struct ForecastService: ForecastProviding {
     private let weather: any WeatherForecasting
     private let cache: any WeatherCaching

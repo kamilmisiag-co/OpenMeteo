@@ -7,6 +7,10 @@
 
 import Utils
 
+public protocol DaySelectionCarrying: Sendable {
+    func selection(_ day: Int?, carriedFrom previousDays: [DailyWeather], to days: [DailyWeather]) -> Int?
+}
+
 public struct DateMatchingDaySelection: DaySelectionCarrying {
     public init() {}
 

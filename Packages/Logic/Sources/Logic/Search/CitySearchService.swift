@@ -7,6 +7,10 @@
 
 import Utils
 
+public protocol CitySearching: Sendable {
+    func search(_ rawQuery: String) async throws -> CitySearchResult
+}
+
 public struct CitySearchService: CitySearching {
     private let geocoder: any CityGeocoding
     private let normalizer: any SearchQueryNormalizing
