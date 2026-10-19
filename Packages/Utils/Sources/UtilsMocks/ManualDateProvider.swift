@@ -25,6 +25,6 @@ public final class ManualDateProvider: DateProviding {
     }
 
     public func advance(by duration: Duration) {
-        date.withLock { $0 = $0.addingTimeInterval(duration / .seconds(1)) }
+        date.withLock { $0 = $0.addingTimeInterval(duration.timeInterval) }
     }
 }
