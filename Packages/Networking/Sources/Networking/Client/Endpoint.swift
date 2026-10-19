@@ -36,12 +36,6 @@ extension Endpoint where Response: Decodable {
     }
 }
 
-extension Endpoint where Response == Data {
-    public func decode(_ response: HTTPResponse, using decoder: any DataDecoding) throws -> Data {
-        response.body
-    }
-}
-
 extension Endpoint where Response == EmptyResponse {
     public func decode(_ response: HTTPResponse, using decoder: any DataDecoding) throws -> EmptyResponse {
         EmptyResponse()

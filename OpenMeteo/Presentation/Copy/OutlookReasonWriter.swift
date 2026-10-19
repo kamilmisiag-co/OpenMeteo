@@ -10,6 +10,10 @@ import Foundation
 import Logic
 import Utils
 
+protocol OutlookReasoning {
+    func reason(for outlook: ActivityOutlook, days: [DailyWeather], format: any ForecastFormatting) -> String
+}
+
 struct OutlookReasonWriter: OutlookReasoning {
     private typealias Clause = (text: String, dayCount: Int)
 
@@ -25,7 +29,7 @@ struct OutlookReasonWriter: OutlookReasoning {
         let outlook = ActivityOutlook(activity: outlook.activity, days: Array(outlook.days.prefix(days.count)), factors: outlook.factors)
         let assessments = outlook.days
         let good = assessments.indices.filter { isGood(assessments[$0]) }
-        let weak = assessments.indices.filter { assessments[$0].score != nil && !isGood(assessments[$0]) }
+        let weak = assessments.indices.filter { assessments[$0].isSuitable && !isGood(assessments[$0]) }
         let blocked = assessments.indices.filter { assessments[$0].blocker != nil }
         let blocker = outlook.dominantBlocker
 
@@ -43,7 +47,7 @@ struct OutlookReasonWriter: OutlookReasoning {
     }
 
     private func isGood(_ assessment: DayAssessment) -> Bool {
-        guard assessment.score != nil else { return false }
+        guard assessment.isSuitable else { return false }
         switch Rating(score: assessment.score) {
         case .excellent, .good: return true
         case .fair, .poor, .notSuitable: return false

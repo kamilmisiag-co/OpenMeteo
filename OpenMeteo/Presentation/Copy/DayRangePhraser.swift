@@ -9,6 +9,10 @@ import Foundation
 import Logic
 import Utils
 
+protocol DayRangeDescribing {
+    func phrase(forDays indices: [Int], in days: [DailyWeather], format: any ForecastFormatting) -> String?
+}
+
 struct DayRangePhraser: DayRangeDescribing {
     func phrase(forDays indices: [Int], in days: [DailyWeather], format: any ForecastFormatting) -> String? {
         let selected = days.validIndices(among: indices)

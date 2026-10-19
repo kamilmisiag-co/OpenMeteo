@@ -11,20 +11,14 @@ import SwiftUI
 
 struct ActivityDetailList: View {
     let detail: ActivityDetail
-    let openMeteo: URL?
+    let openMeteo: URL
     let onShowHowScores: () -> Void
 
     @State private var selectedBarID: Int?
 
     var body: some View {
         List {
-            if let banner = detail.banner {
-                Section {
-                    StatusBanner(kind: banner.kind, message: banner.message)
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
-                }
-            }
+            BannerSection(banner: detail.banner)
 
             Section {
                 ActivityDetailHeader(detail: detail)

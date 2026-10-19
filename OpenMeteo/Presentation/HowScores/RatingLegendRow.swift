@@ -11,14 +11,9 @@ import SwiftUI
 struct RatingLegendRow: View {
     let rating: Rating
 
-    @ScaledMetric(relativeTo: .body) private var dotDiameter: CGFloat = 12
-
     var body: some View {
         HStack(spacing: 12) {
-            Circle()
-                .fill(rating.color)
-                .frame(width: dotDiameter, height: dotDiameter)
-                .accessibilityHidden(true)
+            RatingDot(rating: rating)
             VStack(alignment: .leading, spacing: 1) {
                 Text(rating.title)
                 if rating == .notSuitable {

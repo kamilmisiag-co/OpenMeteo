@@ -10,12 +10,16 @@ import Foundation
 import Logic
 import Utils
 
+protocol RankingPresenting {
+    func presentation(of summary: RankingSummary, in forecast: CityForecast, freshness: Freshness, now: Date) -> RankingPresentation
+    func placeholder(for city: City) -> RankingPresentation
+}
+
 struct RankingPresenter: RankingPresenting {
     private let formats: any ForecastFormatMaking
     private let reasons: any OutlookReasoning
     private let captions: any DayCaptioning
     private let banners: any FreshnessDescribing
-    private let fallbackTimeZone: TimeZone
     private let precipitationLabelThreshold: Double
     private let placeholderDayCount: Int
 
@@ -24,7 +28,6 @@ struct RankingPresenter: RankingPresenting {
         reasons: any OutlookReasoning,
         captions: any DayCaptioning,
         banners: any FreshnessDescribing,
-        fallbackTimeZone: TimeZone,
         precipitationLabelThreshold: Double,
         placeholderDayCount: Int
     ) {
@@ -32,15 +35,14 @@ struct RankingPresenter: RankingPresenting {
         self.reasons = reasons
         self.captions = captions
         self.banners = banners
-        self.fallbackTimeZone = fallbackTimeZone
         self.precipitationLabelThreshold = precipitationLabelThreshold
         self.placeholderDayCount = placeholderDayCount
     }
 
     func presentation(of summary: RankingSummary, in forecast: CityForecast, freshness: Freshness, now: Date) -> RankingPresentation {
-        let format = formats.format(forCityIn: forecast.city.timeZone ?? fallbackTimeZone)
+        let format = formats.format(for: forecast.city)
         let days = forecast.days
-        let selectedDay = summary.selectedDay.flatMap { days.indices.contains($0) ? $0 : nil }
+        let selectedDay = days.validIndex(summary.selectedDay)
         return RankingPresentation(
             title: forecast.city.name,
             subtitle: String(localized: .rankingSubtitle(forecast.city.country, days: days.count)),
@@ -100,23 +102,22 @@ struct RankingPresenter: RankingPresenting {
     }
 
     private func stripDay(at index: Int, on weather: DailyWeather, format: any ForecastFormatting, now: Date) -> ForecastStripDay {
-        let high = format.temperature(weather.highCelsius)
-        let low = format.temperature(weather.lowCelsius)
+        let column = WeatherColumn(weather: weather, format: format)
         let precipitation = weather.precipitationProbability.flatMap { chance in
             chance >= precipitationLabelThreshold ? format.percent(chance) : nil
         }
         let spoken = String(localized: .rankingDayAccessibility(
             format.spokenDay(weather.date),
-            String(localized: weather.condition.title),
-            high,
-            low
+            column.conditionTitle,
+            column.high,
+            column.low
         ))
         return ForecastStripDay(
             id: index,
             label: format.shortDay(weather.date, now: now),
-            symbolName: weather.condition.systemImage,
-            high: high,
-            low: low,
+            symbolName: column.symbolName,
+            high: column.high,
+            low: column.low,
             precipitation: precipitation,
             accessibilityLabel: precipitation.map { String(localized: .rankingDayAccessibilityRain(spoken, $0)) } ?? spoken
         )
@@ -153,7 +154,7 @@ struct RankingPresenter: RankingPresenting {
         guard let day, let weather = days.element(at: day) else {
             return reasons.reason(for: outlook, days: days, format: format)
         }
-        return captions.caption(for: outlook.activity, weather: weather, assessment: outlook.days.element(at: day), format: format)
+        return captions.caption(onDay: day, of: outlook, weather: weather, format: format)
     }
 
     private func bestDay(of summary: RankingSummary, in days: [DailyWeather], format: any ForecastFormatting, now: Date) -> String? {

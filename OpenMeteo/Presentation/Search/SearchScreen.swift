@@ -12,7 +12,7 @@ import SwiftUI
 struct SearchScreen: View {
     @Bindable var viewModel: SearchViewModel
     let dayCount: Int
-    let geoNames: URL?
+    let geoNames: URL
     let onOpen: (City) -> Void
 
     var body: some View {
@@ -57,7 +57,12 @@ struct SearchScreen: View {
         case .noResults(let query):
             ContentUnavailableView.search(text: query)
         case .failed(_, let failure):
-            SearchUnavailableView(failure: failure, onRetry: viewModel.retry)
+            RetryableFailureView(
+                title: .searchUnavailableTitle,
+                systemImage: "wifi.exclamationmark",
+                message: failure.message,
+                onRetry: viewModel.retry
+            )
         }
     }
 }

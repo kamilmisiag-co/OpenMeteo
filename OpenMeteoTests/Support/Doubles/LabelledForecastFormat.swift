@@ -11,6 +11,7 @@ import Utils
 
 final class LabelledForecastFormat: ForecastFormatting {
     let timeZone: TimeZone
+    let noValue = "no value"
 
     init(timeZone: TimeZone) {
         self.timeZone = timeZone

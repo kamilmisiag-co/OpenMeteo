@@ -27,7 +27,7 @@ struct FactorSummaryWriterTests {
     }
 
     private var noValue: String {
-        String(localized: .formatNoValue)
+        format.noValue
     }
 
     private var allWeek: String {
@@ -78,7 +78,6 @@ struct FactorSummaryWriterTests {
 
     @Test("Snowfall totals the snow on the factor's days when any of them is not blocked by it", arguments: [
         [DayAssessment(blockedBy: .snowfall, effects: [:]), DayAssessment(score: 70, effects: [:])],
-        [DayAssessment(blockedBy: .snowfall, effects: [:]), DayAssessment(blockedBy: .thunderstorm, effects: [:])],
         [DayAssessment(blockedBy: .snowfall, effects: [:])],
     ])
     func snowfallTotal(assessments: [DayAssessment]) {

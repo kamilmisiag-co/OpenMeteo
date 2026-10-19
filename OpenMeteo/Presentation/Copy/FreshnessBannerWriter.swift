@@ -9,6 +9,10 @@ import DesignSystem
 import Foundation
 import Logic
 
+protocol FreshnessDescribing {
+    func banner(for freshness: Freshness, format: any ForecastFormatting, now: Date) -> BannerContent?
+}
+
 struct FreshnessBannerWriter: FreshnessDescribing {
     func banner(for freshness: Freshness, format: any ForecastFormatting, now: Date) -> BannerContent? {
         switch freshness {

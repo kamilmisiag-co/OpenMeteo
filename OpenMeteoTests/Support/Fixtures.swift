@@ -8,26 +8,15 @@
 import Foundation
 import Logic
 import Utils
+@testable import OpenMeteo
 
 enum Fixtures {
     typealias DayValues = (condition: WeatherCondition, high: Double, low: Double, rain: Double?, wind: Double, gusts: Double, snowfall: Double)
 
-    static let lisbonTimeZone = TimeZone(identifier: "Europe/Lisbon") ?? .gmt
+    static let lisbonTimeZone = TimeZone(identifier: "Europe/Lisbon")!
     static let locale = Locale(identifier: "en_GB")
     static let referenceNow = Date(timeIntervalSince1970: 1_792_053_720)
 
-    static let lisbon = City(
-        id: 2_267_057, name: "Lisbon", region: "Lisbon", country: "Portugal", countryCode: "PT",
-        latitude: 38.7167, longitude: -9.1333, timeZoneIdentifier: "Europe/Lisbon"
-    )
-    static let bergen = City(
-        id: 3_161_732, name: "Bergen", region: "Vestland", country: "Norway", countryCode: "NO",
-        latitude: 60.3913, longitude: 5.3221, timeZoneIdentifier: "Europe/Oslo"
-    )
-    static let zakopane = City(
-        id: 3_080_866, name: "Zakopane", region: "Lesser Poland", country: "Poland", countryCode: "PL",
-        latitude: 49.2992, longitude: 19.9496, timeZoneIdentifier: "Europe/Warsaw"
-    )
     static let nowhere = City(
         id: 1, name: "Nowhere", region: nil, country: "Atlantis", countryCode: nil,
         latitude: 0, longitude: 0, timeZoneIdentifier: nil
@@ -91,7 +80,7 @@ enum Fixtures {
     ]
 
     static func lisbonForecast(fetchedAt: Date = referenceNow) -> CityForecast {
-        CityForecast(city: lisbon, days: days(lisbonWeather), outlooks: lisbonOutlooks, fetchedAt: fetchedAt)
+        CityForecast(city: PreviewCities.lisbon, days: days(lisbonWeather), outlooks: lisbonOutlooks, fetchedAt: fetchedAt)
     }
 
     static func result(_ forecast: CityForecast, origin: ForecastResult.Origin = .live) -> ForecastResult {

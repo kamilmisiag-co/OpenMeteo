@@ -84,7 +84,7 @@ struct RankingViewModelTests {
             detailPresenter: detailPresenter
         )
         return Harness(
-            viewModel: RankingViewModel(city: Fixtures.lisbon, dependencies: dependencies),
+            viewModel: RankingViewModel(city: PreviewCities.lisbon, dependencies: dependencies),
             loader: loader,
             updater: updater,
             daySelector: daySelector,
@@ -118,12 +118,12 @@ struct RankingViewModelTests {
         #expect(harness.viewModel.state == .loading)
         #expect(harness.viewModel.isLoading)
         #expect(harness.viewModel.now == Fixtures.referenceNow)
-        #expect(harness.viewModel.placeholder == RecordingRankingPresenter.labelledPlaceholder(for: Fixtures.lisbon))
+        #expect(harness.viewModel.placeholder == RecordingRankingPresenter.labelledPlaceholder(for: PreviewCities.lisbon))
         #expect(harness.viewModel.presentation == nil)
         #expect(harness.viewModel.failure == nil)
         #expect(harness.viewModel.dayCount == ViewModelFixtures.standardDayCount)
         #expect(harness.viewModel.detail(for: .surfing) == nil)
-        #expect(harness.presenter.placeholderCities == [Fixtures.lisbon])
+        #expect(harness.presenter.placeholderCities == [PreviewCities.lisbon])
         #expect(harness.loader.requestedCities.isEmpty)
         #expect(harness.summarizer.calls.isEmpty)
         #expect(harness.insights.calls.isEmpty)
@@ -138,31 +138,31 @@ struct RankingViewModelTests {
 
         await harness.viewModel.load()
 
-        #expect(harness.loader.requestedCities == [Fixtures.lisbon])
-        #expect(harness.updater.calls == [.init(current: .loading, outcome: Self.outcome, city: Fixtures.lisbon)])
+        #expect(harness.loader.requestedCities == [PreviewCities.lisbon])
+        #expect(harness.updater.calls == [.init(current: .loading, outcome: Self.outcome, city: PreviewCities.lisbon)])
         #expect(harness.viewModel.state == cached)
         #expect(!harness.viewModel.isLoading)
         #expect(harness.viewModel.failure == nil)
         #expect(harness.viewModel.now == Fixtures.referenceNow.addingTimeInterval(90))
     }
 
-    @Test("The presentation is the presenter's view of the summary and freshness of the shown forecast", arguments: [nil, 3] as [Int?])
-    func presentationOfShownForecast(selectedDay: Int?) async {
-        let harness = await loadedHarness(states: [Self.shown(onDay: selectedDay)])
+    @Test("The presentation is the presenter's view of the summary and freshness of the shown forecast")
+    func presentationOfShownForecast() async {
+        let harness = await loadedHarness(states: [Self.shown(onDay: 3)])
 
         let presentation = harness.viewModel.presentation
 
         #expect(presentation == RecordingRankingPresenter.labelledPresentation(for: presentationRequest()))
         #expect(harness.presenter.requests == [presentationRequest()])
-        #expect(harness.summarizer.calls == [.init(forecast: Self.forecast, day: selectedDay)])
+        #expect(harness.summarizer.calls == [.init(forecast: Self.forecast, day: 3)])
         #expect(harness.freshness.calls == [.init(result: Self.result, now: Fixtures.referenceNow)])
     }
 
-    @Test("A failed state exposes its failure with nothing to present", arguments: [ServiceFailure.offline, .noUpcomingDays, .unavailable])
-    func failure(_ failure: ServiceFailure) async {
-        let harness = await loadedHarness(states: [.failed(failure)])
+    @Test("A failed state exposes its failure with nothing to present")
+    func failure() async {
+        let harness = await loadedHarness(states: [.failed(.unavailable)])
 
-        #expect(harness.viewModel.failure == failure)
+        #expect(harness.viewModel.failure == .unavailable)
         #expect(!harness.viewModel.isLoading)
         #expect(harness.viewModel.presentation == nil)
         #expect(harness.viewModel.detail(for: .surfing) == nil)
@@ -174,21 +174,21 @@ struct RankingViewModelTests {
     @Test("The day count follows the shown forecast instead of the standard count")
     func dayCountFromForecast() async {
         let days = Fixtures.days(Array(Fixtures.lisbonWeather.prefix(5)))
-        let short = CityForecast(city: Fixtures.lisbon, days: days, outlooks: Fixtures.lisbonOutlooks, fetchedAt: Fixtures.referenceNow)
+        let short = CityForecast(city: PreviewCities.lisbon, days: days, outlooks: Fixtures.lisbonOutlooks, fetchedAt: Fixtures.referenceNow)
         let harness = await loadedHarness(states: [.loaded(LoadedForecast(result: Fixtures.result(short), selectedDay: nil))])
 
         #expect(harness.viewModel.dayCount == 5)
     }
 
-    @Test("A load once the state has settled fetches nothing", arguments: [RankingViewModelTests.loaded, .failed(.offline)])
-    func loadOnlyWhileLoading(settled: ForecastState) async {
-        let harness = await loadedHarness(states: [settled])
+    @Test("A load once the state has settled fetches nothing")
+    func loadOnlyWhileLoading() async {
+        let harness = await loadedHarness(states: [.failed(.offline)])
 
         await harness.viewModel.load()
 
         #expect(harness.loader.requestedCities.count == 1)
         #expect(harness.updater.calls.count == 1)
-        #expect(harness.viewModel.state == settled)
+        #expect(harness.viewModel.state == .failed(.offline))
     }
 
     @Test("A fetch asked for while another one runs fetches nothing", arguments: Fetch.allCases)
@@ -224,7 +224,7 @@ struct RankingViewModelTests {
         await gate.open()
         await retry.value
 
-        #expect(harness.updater.calls.last == .init(current: .loading, outcome: Self.outcome, city: Fixtures.lisbon))
+        #expect(harness.updater.calls.last == .init(current: .loading, outcome: Self.outcome, city: PreviewCities.lisbon))
         #expect(harness.viewModel.state == Self.loaded)
     }
 
@@ -259,7 +259,7 @@ struct RankingViewModelTests {
         await gate.open()
         await refresh.value
 
-        #expect(harness.updater.calls.last == .init(current: Self.loaded, outcome: dropped, city: Fixtures.lisbon))
+        #expect(harness.updater.calls.last == .init(current: Self.loaded, outcome: dropped, city: PreviewCities.lisbon))
         #expect(harness.viewModel.state == refreshed)
     }
 

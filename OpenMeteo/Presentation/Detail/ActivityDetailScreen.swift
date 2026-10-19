@@ -14,23 +14,13 @@ struct ActivityDetailScreen: View {
     let links: AttributionLinks
 
     @State private var isShowingHowScores = false
-    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         let detail = viewModel.detail(for: activity)
         content(detail)
             .navigationTitle(activity.title)
             .navigationSubtitle(detail?.subtitle ?? viewModel.city.name)
-            .sheet(isPresented: $isShowingHowScores) {
-                HowScoresSheet(dayCount: viewModel.dayCount, links: links)
-            }
-            .task {
-                await viewModel.load()
-            }
-            .onChange(of: scenePhase) { _, phase in
-                guard phase == .active else { return }
-                viewModel.updateClock()
-            }
+            .rankingLifecycle(of: viewModel, links: links, isShowingHowScores: $isShowingHowScores)
     }
 
     @ViewBuilder
@@ -43,9 +33,7 @@ struct ActivityDetailScreen: View {
                 await viewModel.refresh()
             }
         } else if let failure = viewModel.failure {
-            ForecastFailureView(failure: failure) {
-                await viewModel.retry()
-            }
+            RetryableFailureView(failure: failure, onRetry: viewModel.retry)
         } else if viewModel.isLoading {
             ProgressView {
                 Text(.rankingLoading)

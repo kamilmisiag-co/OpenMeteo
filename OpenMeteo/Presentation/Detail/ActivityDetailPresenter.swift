@@ -10,6 +10,10 @@ import Foundation
 import Logic
 import Utils
 
+protocol ActivityDetailPresenting {
+    func detail(for insight: ActivityInsight, in forecast: CityForecast, freshness: Freshness, now: Date) -> ActivityDetail
+}
+
 struct ActivityDetailPresenter: ActivityDetailPresenting {
     private static let fallbackEmptyChartSymbol = "chart.bar.xaxis"
 
@@ -18,26 +22,23 @@ struct ActivityDetailPresenter: ActivityDetailPresenting {
     private let factors: any FactorSummarizing
     private let captions: any DayCaptioning
     private let banners: any FreshnessDescribing
-    private let fallbackTimeZone: TimeZone
 
     init(
         formats: any ForecastFormatMaking,
         reasons: any OutlookReasoning,
         factors: any FactorSummarizing,
         captions: any DayCaptioning,
-        banners: any FreshnessDescribing,
-        fallbackTimeZone: TimeZone
+        banners: any FreshnessDescribing
     ) {
         self.formats = formats
         self.reasons = reasons
         self.factors = factors
         self.captions = captions
         self.banners = banners
-        self.fallbackTimeZone = fallbackTimeZone
     }
 
     func detail(for insight: ActivityInsight, in forecast: CityForecast, freshness: Freshness, now: Date) -> ActivityDetail {
-        let format = formats.format(forCityIn: forecast.city.timeZone ?? fallbackTimeZone)
+        let format = formats.format(for: forecast.city)
         let outlook = insight.outlook
         let activity = insight.activity
         let days = forecast.days
@@ -107,15 +108,16 @@ struct ActivityDetailPresenter: ActivityDetailPresenting {
         format: any ForecastFormatting,
         now: Date
     ) -> ActivityDetailDay {
-        ActivityDetailDay(
+        let column = WeatherColumn(weather: weather, format: format)
+        return ActivityDetailDay(
             id: index,
             label: format.day(weather.date, now: now),
-            symbolName: weather.condition.systemImage,
-            conditionTitle: String(localized: weather.condition.title),
-            high: format.temperature(weather.highCelsius),
-            low: format.temperature(weather.lowCelsius),
+            symbolName: column.symbolName,
+            conditionTitle: column.conditionTitle,
+            high: column.high,
+            low: column.low,
             score: outlook.score(onDay: index),
-            caption: captions.caption(for: outlook.activity, weather: weather, assessment: outlook.days.element(at: index), format: format),
+            caption: captions.caption(onDay: index, of: outlook, weather: weather, format: format),
             isBest: isBest
         )
     }

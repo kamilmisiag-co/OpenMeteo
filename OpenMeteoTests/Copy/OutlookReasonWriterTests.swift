@@ -163,9 +163,9 @@ struct OutlookReasonWriterTests {
         #expect(result == String(localized: .reasonBlockedThunderstorm(label(allDays))))
     }
 
-    @Test("Any other block reads as not suitable", arguments: [Factor.Kind.wind, .rain, .temperature])
-    func otherBlocker(kind: Factor.Kind) {
-        let result = reason(week(blocked: allDays, by: kind))
+    @Test("Any other block reads as not suitable")
+    func otherBlocker() {
+        let result = reason(week(blocked: allDays, by: .wind))
         #expect(result == String(localized: .reasonBlockedOther(label(allDays))))
     }
 

@@ -20,7 +20,6 @@ struct ActivityDetailPresenterTests {
     private let factors = LabelledFactorSummaries()
     private let captions = LabelledDayCaptions()
     private let banners = LabelledFreshnessBanners()
-    private let fallbackZone = TimeZone(identifier: "America/New_York") ?? .gmt
     private let now = Fixtures.referenceNow
 
     @Test("The header shows the forecast's date range, the weekly score, the rank and the scoring note")
@@ -147,7 +146,7 @@ struct ActivityDetailPresenterTests {
 
     @Test("A forecast without days falls back to the city name and the generic empty chart")
     func emptyForecast() {
-        let forecast = CityForecast(city: Fixtures.lisbon, days: [], outlooks: [], fetchedAt: now)
+        let forecast = CityForecast(city: PreviewCities.lisbon, days: [], outlooks: [], fetchedAt: now)
         let detail = present(insight(ActivityOutlook(activity: .surfing, days: [], factors: [])), in: forecast)
         #expect(detail.subtitle == "Lisbon")
         #expect(detail.bars.isEmpty)
@@ -188,17 +187,10 @@ struct ActivityDetailPresenterTests {
         #expect(banners.calls.allSatisfy { formats.handedOut($0.format) })
     }
 
-    @Test("A city with a time zone is formatted in its own time zone")
-    func usesCityTimeZone() {
+    @Test("The forecast is formatted for its city")
+    func formatsForCity() {
         _ = present(insight())
-        #expect(formats.requestedTimeZones == [Fixtures.lisbonTimeZone])
-    }
-
-    @Test("A city without a time zone is formatted in the fallback time zone")
-    func usesFallbackTimeZone() {
-        let lisbon = Fixtures.lisbonForecast()
-        _ = present(insight(), in: CityForecast(city: Fixtures.nowhere, days: lisbon.days, outlooks: lisbon.outlooks, fetchedAt: lisbon.fetchedAt))
-        #expect(formats.requestedTimeZones == [fallbackZone])
+        #expect(formats.requestedCities == [PreviewCities.lisbon])
     }
 
     private func insight(
@@ -220,8 +212,7 @@ struct ActivityDetailPresenterTests {
             reasons: reasons,
             factors: factors,
             captions: captions,
-            banners: banners,
-            fallbackTimeZone: fallbackZone
+            banners: banners
         )
         return presenter.detail(for: insight, in: forecast, freshness: freshness, now: now)
     }

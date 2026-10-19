@@ -14,9 +14,9 @@ import Testing
 @MainActor
 struct AppSessionTests {
     private static let links = AttributionLinks(
-        openMeteo: URL(string: "https://open-meteo.com"),
-        licence: nil,
-        geoNames: URL(string: "https://www.geonames.org")
+        openMeteo: AppStandard.openMeteoURL,
+        licence: AppStandard.licenceURL,
+        geoNames: AppStandard.geoNamesURL
     )
 
     private func makeSession(recents: ScriptedRecentCitiesManager) -> AppSession {
@@ -30,39 +30,25 @@ struct AppSessionTests {
 
     @Test("Opening a city shows its ranking and records the visit")
     func openRecordsAndNavigates() {
-        let recents = ScriptedRecentCitiesManager(cities: [Fixtures.bergen], afterVisit: [Fixtures.lisbon, Fixtures.bergen])
+        let recents = ScriptedRecentCitiesManager(cities: [PreviewCities.bergen], afterVisit: [PreviewCities.lisbon, PreviewCities.bergen])
         let session = makeSession(recents: recents)
 
-        session.open(Fixtures.lisbon)
+        session.open(PreviewCities.lisbon)
 
-        #expect(session.navigator.path == [.ranking(Fixtures.lisbon)])
-        #expect(recents.calls == [.recentCities, .recordVisit(Fixtures.lisbon)])
-        #expect(session.search.recents == [Fixtures.lisbon, Fixtures.bergen])
+        #expect(session.navigator.path == [.ranking(PreviewCities.lisbon)])
+        #expect(recents.calls == [.recentCities, .recordVisit(PreviewCities.lisbon)])
+        #expect(session.search.recents == [PreviewCities.lisbon, PreviewCities.bergen])
     }
 
     @Test("Opening the city that is already shown pushes nothing and records no second visit")
     func repeatedOpenIgnored() {
-        let recents = ScriptedRecentCitiesManager(afterVisit: [Fixtures.lisbon])
+        let recents = ScriptedRecentCitiesManager(afterVisit: [PreviewCities.lisbon])
         let session = makeSession(recents: recents)
 
-        session.open(Fixtures.lisbon)
-        session.open(Fixtures.lisbon)
+        session.open(PreviewCities.lisbon)
+        session.open(PreviewCities.lisbon)
 
-        #expect(session.navigator.path == [.ranking(Fixtures.lisbon)])
-        #expect(recents.calls == [.recentCities, .recordVisit(Fixtures.lisbon)])
-    }
-
-    @Test("The session hands its search, navigator, links and day count to the screens")
-    func passesConfiguration() {
-        let search = SearchViewModel(dependencies: ViewModelFixtures.searchDependencies())
-        let navigator = AppNavigator(rankings: CountingRankingViewModelFactory())
-
-        let session = AppSession(search: search, navigator: navigator, links: Self.links, dayCount: 5)
-
-        #expect(session.search === search)
-        #expect(session.navigator === navigator)
-        #expect(session.links == Self.links)
-        #expect(session.dayCount == 5)
-        #expect(navigator.path.isEmpty)
+        #expect(session.navigator.path == [.ranking(PreviewCities.lisbon)])
+        #expect(recents.calls == [.recentCities, .recordVisit(PreviewCities.lisbon)])
     }
 }

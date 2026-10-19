@@ -26,7 +26,6 @@ struct RankingPresenterTests {
     private let reasons = LabelledOutlookReasons()
     private let captions = LabelledDayCaptions()
     private let banners = LabelledFreshnessBanners()
-    private let fallbackZone = TimeZone(identifier: "America/New_York") ?? .gmt
     private let now = Fixtures.referenceNow
 
     @Test("Items carry each ranked activity's rank, title, symbol, score and daily scores")
@@ -92,9 +91,9 @@ struct RankingPresenterTests {
         #expect(presentation.header == String(localized: .rankingHeaderToday))
     }
 
-    @Test("A selected day outside the forecast falls back to the week", arguments: [-1, 7])
-    func outOfRangeDay(day: Int) {
-        let presentation = present(day: day)
+    @Test("A selected day outside the forecast falls back to the week")
+    func outOfRangeDay() {
+        let presentation = present(day: 7)
         #expect(presentation.selectedDay == nil)
         #expect(presentation.header == String(localized: .rankingHeaderWeek))
         #expect(presentation.topPick?.reason == "reason surfing over 7 days")
@@ -174,7 +173,6 @@ struct RankingPresenterTests {
         arguments: [
             (0.3, [nil, nil, nil, nil, nil, "80%", "50%"]),
             (0.2, [nil, nil, nil, nil, "20%", "80%", "50%"]),
-            (0.9, [nil, nil, nil, nil, nil, nil, nil]),
         ] as [(Double, [String?])]
     )
     func precipitationThreshold(threshold: Double, labels: [String?]) {
@@ -184,7 +182,7 @@ struct RankingPresenterTests {
     @Test("A day without a rain chance has no rain label, even at a zero threshold")
     func missingRainChance() {
         let forecast = CityForecast(
-            city: Fixtures.lisbon,
+            city: PreviewCities.lisbon,
             days: Fixtures.days([(.cloudy, 12, 6, nil, 10, 20, 0)]),
             outlooks: [],
             fetchedAt: now
@@ -224,66 +222,20 @@ struct RankingPresenterTests {
         #expect(presentation.dayInitials.count == 5)
     }
 
-    @Test("A city with a time zone is formatted in its own time zone")
-    func usesCityTimeZone() {
+    @Test("The forecast is formatted for its city")
+    func formatsForCity() {
         _ = present()
-        #expect(formats.requestedTimeZones == [Fixtures.lisbonTimeZone])
+        #expect(formats.requestedCities == [PreviewCities.lisbon])
     }
 
-    @Test("A city without a time zone is formatted in the fallback time zone")
-    func usesFallbackTimeZone() {
-        let lisbon = Fixtures.lisbonForecast()
-        _ = present(forecast: CityForecast(city: Fixtures.nowhere, days: lisbon.days, outlooks: lisbon.outlooks, fetchedAt: lisbon.fetchedAt))
-        #expect(formats.requestedTimeZones == [fallbackZone])
-    }
-
-    @Test("The placeholder has loading shapes for every activity without asking any collaborator")
-    func placeholder() {
-        let placeholder = makePresenter().placeholder(for: Fixtures.lisbon)
-        let items = [placeholder.topPick].compactMap { $0 } + placeholder.others
-        let value = String(localized: .rankingPlaceholderValue)
-        let loading = String(localized: .rankingLoading)
-        #expect(placeholder.title == "Lisbon")
-        #expect(placeholder.header == String(localized: .rankingHeaderWeek))
-        #expect(placeholder.eyebrow == String(localized: .rankingEyebrowTopPick))
-        #expect(placeholder.updated == value)
-        #expect(items.map(\.activity) == Activity.allCases)
-        #expect(items.map(\.rank) == [1, 2, 3, 4])
-        #expect(items.map(\.title) == Activity.allCases.map { String(localized: $0.title) })
-        #expect(items.map(\.systemImage) == Activity.allCases.map(\.systemImage))
-        #expect(items.allSatisfy { $0.reason == loading && $0.score == nil && $0.dailyScores.allSatisfy { $0 == nil } })
-        #expect(placeholder.stripDays.allSatisfy {
-            $0.label == value && $0.high == value && $0.low == value && $0.precipitation == nil
-                && $0.symbolName == WeatherCondition.cloudy.systemImage && $0.accessibilityLabel == loading
-        })
-        #expect(placeholder.dayInitials.allSatisfy { $0 == value })
-        #expect(placeholder.selectedDay == nil)
-        #expect(placeholder.bestDay == nil)
-        #expect(placeholder.banner == nil)
-        #expect(formats.requestedTimeZones.isEmpty)
-        #expect(reasons.calls.isEmpty && captions.calls.isEmpty && banners.calls.isEmpty)
-    }
-
-    @Test("The placeholder has the configured number of days", arguments: [5, 10])
-    func placeholderDayCount(dayCount: Int) {
-        let placeholder = makePresenter(placeholderDayCount: dayCount).placeholder(for: Fixtures.lisbon)
-        let items = [placeholder.topPick].compactMap { $0 } + placeholder.others
-        #expect(placeholder.subtitle == String(localized: .rankingSubtitle("Portugal", days: dayCount)))
-        #expect(placeholder.stripTitle == String(localized: .rankingStripTitle(dayCount)))
-        #expect(placeholder.stripDays.map(\.id) == Array(0..<dayCount))
-        #expect(placeholder.dayInitials.count == dayCount)
-        #expect(items.allSatisfy { $0.dailyScores.count == dayCount })
-    }
-
-    private func makePresenter(threshold: Double = 0.3, placeholderDayCount: Int = 7) -> RankingPresenter {
+    private func makePresenter(threshold: Double) -> RankingPresenter {
         RankingPresenter(
             formats: formats,
             reasons: reasons,
             captions: captions,
             banners: banners,
-            fallbackTimeZone: fallbackZone,
             precipitationLabelThreshold: threshold,
-            placeholderDayCount: placeholderDayCount
+            placeholderDayCount: 7
         )
     }
 

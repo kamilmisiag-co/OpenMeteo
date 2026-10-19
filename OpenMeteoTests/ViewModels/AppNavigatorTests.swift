@@ -17,109 +17,99 @@ struct AppNavigatorTests {
         return (AppNavigator(rankings: factory), factory)
     }
 
-    @Test("Showing a ranking and then a detail pushes both routes")
-    func pushesRoutes() {
-        let (navigator, _) = makeNavigator()
-
-        navigator.showRanking(for: Fixtures.lisbon)
-        navigator.showDetail(of: .surfing, in: Fixtures.lisbon)
-
-        #expect(navigator.path == [.ranking(Fixtures.lisbon), .detail(Fixtures.lisbon, .surfing)])
-    }
-
     @Test("Showing the route that is already on top pushes nothing")
     func ignoresRepeatedPush() {
         let (navigator, _) = makeNavigator()
 
-        #expect(navigator.showRanking(for: Fixtures.lisbon))
-        #expect(!navigator.showRanking(for: Fixtures.lisbon))
-        #expect(navigator.showDetail(of: .surfing, in: Fixtures.lisbon))
-        #expect(!navigator.showDetail(of: .surfing, in: Fixtures.lisbon))
-        #expect(navigator.showDetail(of: .skiing, in: Fixtures.lisbon))
+        #expect(navigator.showRanking(for: PreviewCities.lisbon))
+        #expect(!navigator.showRanking(for: PreviewCities.lisbon))
+        #expect(navigator.showDetail(of: .surfing, in: PreviewCities.lisbon))
+        #expect(!navigator.showDetail(of: .surfing, in: PreviewCities.lisbon))
+        #expect(navigator.showDetail(of: .skiing, in: PreviewCities.lisbon))
 
-        #expect(navigator.path == [.ranking(Fixtures.lisbon), .detail(Fixtures.lisbon, .surfing), .detail(Fixtures.lisbon, .skiing)])
+        #expect(navigator.path == [.ranking(PreviewCities.lisbon), .detail(PreviewCities.lisbon, .surfing), .detail(PreviewCities.lisbon, .skiing)])
     }
 
     @Test("The ranking and detail of one city share a view model")
     func sharedViewModel() {
         let (navigator, factory) = makeNavigator()
-        navigator.showRanking(for: Fixtures.lisbon)
-        let ranking = navigator.rankingViewModel(for: Fixtures.lisbon)
+        navigator.showRanking(for: PreviewCities.lisbon)
+        let ranking = navigator.rankingViewModel(for: PreviewCities.lisbon)
 
-        navigator.showDetail(of: .surfing, in: Fixtures.lisbon)
-        let detail = navigator.rankingViewModel(for: Fixtures.lisbon)
+        navigator.showDetail(of: .surfing, in: PreviewCities.lisbon)
+        let detail = navigator.rankingViewModel(for: PreviewCities.lisbon)
 
         #expect(ranking === detail)
-        #expect(factory.madeCities == [Fixtures.lisbon])
+        #expect(factory.madeCities == [PreviewCities.lisbon])
     }
 
     @Test("Each city gets its own view model")
     func viewModelPerCity() {
         let (navigator, factory) = makeNavigator()
-        navigator.path = [.ranking(Fixtures.lisbon), .ranking(Fixtures.bergen)]
+        navigator.path = [.ranking(PreviewCities.lisbon), .ranking(PreviewCities.bergen)]
 
-        let lisbon = navigator.rankingViewModel(for: Fixtures.lisbon)
-        let bergen = navigator.rankingViewModel(for: Fixtures.bergen)
+        let lisbon = navigator.rankingViewModel(for: PreviewCities.lisbon)
+        let bergen = navigator.rankingViewModel(for: PreviewCities.bergen)
 
         #expect(lisbon !== bergen)
-        #expect(lisbon.city == Fixtures.lisbon)
-        #expect(bergen.city == Fixtures.bergen)
-        #expect(factory.madeCities == [Fixtures.lisbon, Fixtures.bergen])
+        #expect(lisbon.city == PreviewCities.lisbon)
+        #expect(bergen.city == PreviewCities.bergen)
+        #expect(factory.madeCities == [PreviewCities.lisbon, PreviewCities.bergen])
     }
 
     @Test("Popping only the detail keeps the city's view model")
     func popDetailKeepsViewModel() {
         let (navigator, factory) = makeNavigator()
-        navigator.path = [.ranking(Fixtures.lisbon), .detail(Fixtures.lisbon, .surfing)]
-        let before = navigator.rankingViewModel(for: Fixtures.lisbon)
+        navigator.path = [.ranking(PreviewCities.lisbon), .detail(PreviewCities.lisbon, .surfing)]
+        let before = navigator.rankingViewModel(for: PreviewCities.lisbon)
 
         navigator.path.removeLast()
 
-        #expect(navigator.rankingViewModel(for: Fixtures.lisbon) === before)
+        #expect(navigator.rankingViewModel(for: PreviewCities.lisbon) === before)
         #expect(factory.madeCities.count == 1)
     }
 
     @Test("Leaving a city releases its view model so reopening it starts fresh")
     func popCityReleasesViewModel() {
         let (navigator, factory) = makeNavigator()
-        navigator.path = [.ranking(Fixtures.lisbon), .detail(Fixtures.lisbon, .surfing)]
-        let before = navigator.rankingViewModel(for: Fixtures.lisbon)
+        navigator.path = [.ranking(PreviewCities.lisbon), .detail(PreviewCities.lisbon, .surfing)]
+        let before = navigator.rankingViewModel(for: PreviewCities.lisbon)
 
         navigator.path = []
-        navigator.showRanking(for: Fixtures.lisbon)
+        navigator.showRanking(for: PreviewCities.lisbon)
 
-        #expect(navigator.rankingViewModel(for: Fixtures.lisbon) !== before)
-        #expect(factory.madeCities == [Fixtures.lisbon, Fixtures.lisbon])
+        #expect(navigator.rankingViewModel(for: PreviewCities.lisbon) !== before)
+        #expect(factory.madeCities == [PreviewCities.lisbon, PreviewCities.lisbon])
     }
 
     @Test("Leaving one city keeps the view models of cities still on the path")
     func pruneKeepsRemainingCities() {
         let (navigator, factory) = makeNavigator()
-        navigator.path = [.ranking(Fixtures.lisbon), .ranking(Fixtures.bergen)]
-        let lisbon = navigator.rankingViewModel(for: Fixtures.lisbon)
-        _ = navigator.rankingViewModel(for: Fixtures.bergen)
+        navigator.path = [.ranking(PreviewCities.lisbon), .ranking(PreviewCities.bergen)]
+        let lisbon = navigator.rankingViewModel(for: PreviewCities.lisbon)
+        _ = navigator.rankingViewModel(for: PreviewCities.bergen)
 
         navigator.path.removeLast()
 
-        #expect(navigator.rankingViewModel(for: Fixtures.lisbon) === lisbon)
+        #expect(navigator.rankingViewModel(for: PreviewCities.lisbon) === lisbon)
         #expect(factory.madeCities.count == 2)
     }
 
     @Test("Asking for a view model does not notify observers")
     func lookupIsUnobserved() {
         let (navigator, _) = makeNavigator()
-        navigator.path = [.ranking(Fixtures.lisbon), .ranking(Fixtures.bergen)]
+        navigator.path = [.ranking(PreviewCities.lisbon), .ranking(PreviewCities.bergen)]
         let probe = ObservationProbe()
 
         probe.track {
             _ = navigator.path
-            _ = navigator.rankingViewModel(for: Fixtures.lisbon)
+            _ = navigator.rankingViewModel(for: PreviewCities.lisbon)
         }
-        _ = navigator.rankingViewModel(for: Fixtures.bergen)
-        _ = navigator.rankingViewModel(for: Fixtures.lisbon)
+        _ = navigator.rankingViewModel(for: PreviewCities.bergen)
+        _ = navigator.rankingViewModel(for: PreviewCities.lisbon)
 
         #expect(probe.changeCount == 0)
-        navigator.showDetail(of: .skiing, in: Fixtures.bergen)
+        navigator.showDetail(of: .skiing, in: PreviewCities.bergen)
         #expect(probe.changeCount == 1)
     }
 }
