@@ -12,12 +12,27 @@ struct RootView: View {
     let session: AppSession
 
     var body: some View {
-        NavigationStack {
+        @Bindable var navigator = session.navigator
+        NavigationStack(path: $navigator.path) {
             SearchScreen(
                 viewModel: session.search,
                 dayCount: session.dayCount,
                 geoNames: session.links.geoNames,
                 onOpen: session.open
+            )
+            .navigationDestination(for: AppRoute.self) { route in
+                destination(for: route)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func destination(for route: AppRoute) -> some View {
+        switch route {
+        case .ranking(let city):
+            RankingScreen(
+                viewModel: session.navigator.rankingViewModel(for: city),
+                links: session.links
             )
         }
     }

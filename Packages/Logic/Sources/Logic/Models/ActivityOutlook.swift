@@ -38,6 +38,10 @@ public struct ActivityOutlook: Hashable, Sendable {
         return best
     }
 
+    public var dominantBlocker: Factor.Kind? {
+        days.compactMap(\.blocker).mostFrequentCase()
+    }
+
     public func score(onDay day: Int) -> Int? {
         days.element(at: day)?.score
     }

@@ -11,3 +11,9 @@ extension Sequence {
         return try filter { seenKeys.insert(try key($0)).inserted }
     }
 }
+
+extension Sequence where Element: Hashable {
+    public func uniqued() -> [Element] {
+        uniqued { $0 }
+    }
+}

@@ -19,21 +19,7 @@ public struct ActivityInsightBuilder: ActivityInsightProviding {
             outlook: ranked.outlook,
             rank: ranked.rank,
             rankedCount: ranking.count,
-            dominantBlocker: dominantBlocker(in: ranked.outlook)
+            dominantBlocker: ranked.outlook.dominantBlocker
         )
-    }
-
-    private func dominantBlocker(in outlook: ActivityOutlook) -> Factor.Kind? {
-        let blockers = outlook.days.compactMap(\.blocker)
-        var dominant: Factor.Kind?
-        var dominantCount = 0
-        for kind in Factor.Kind.allCases {
-            let count = blockers.count { $0 == kind }
-            if count > dominantCount {
-                dominant = kind
-                dominantCount = count
-            }
-        }
-        return dominant
     }
 }
