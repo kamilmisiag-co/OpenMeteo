@@ -20,12 +20,16 @@ final class LabelledFreshnessBanners: FreshnessDescribing {
 
     private(set) var calls: [Call] = []
 
+    static func labelledBanner(for freshness: Freshness) -> BannerContent? {
+        switch freshness {
+        case .fresh: nil
+        case .stale(let since): BannerContent(kind: .stale, message: "stale since \(Int(since.timeIntervalSince1970))")
+        case .offline(let since): BannerContent(kind: .offline, message: "offline since \(Int(since.timeIntervalSince1970))")
+        }
+    }
+
     func banner(for freshness: Freshness, format: any ForecastFormatting, now: Date) -> BannerContent? {
         calls.append(Call(freshness: freshness, format: format, now: now))
-        switch freshness {
-        case .fresh: return nil
-        case .stale(let since): return BannerContent(kind: .stale, message: "stale since \(Int(since.timeIntervalSince1970))")
-        case .offline(let since): return BannerContent(kind: .offline, message: "offline since \(Int(since.timeIntervalSince1970))")
-        }
+        return Self.labelledBanner(for: freshness)
     }
 }

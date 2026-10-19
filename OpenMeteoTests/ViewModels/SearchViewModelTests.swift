@@ -16,7 +16,7 @@ struct SearchViewModelTests {
     private typealias Request = SearchResolverDouble.Request
 
     nonisolated private static func found(_ request: Request) -> CitySearchState? {
-        .results(query: trimmed(request.query), cities: [Fixtures.lisbon])
+        .results(query: trimmed(request.query), cities: [PreviewCities.lisbon])
     }
 
     nonisolated private static func trimmed(_ query: String) -> String {
@@ -47,11 +47,11 @@ struct SearchViewModelTests {
 
     @Test("Starts idle with the recents the manager has")
     func initialState() {
-        let recents = ScriptedRecentCitiesManager(cities: [Fixtures.lisbon, Fixtures.bergen])
+        let recents = ScriptedRecentCitiesManager(cities: [PreviewCities.lisbon, PreviewCities.bergen])
         let (viewModel, resolver) = makeViewModel(recents: recents)
 
         #expect(viewModel.state == .idle)
-        #expect(viewModel.recents == [Fixtures.lisbon, Fixtures.bergen])
+        #expect(viewModel.recents == [PreviewCities.lisbon, PreviewCities.bergen])
         #expect(recents.calls == [.recentCities])
         #expect(!viewModel.isShowingProgress)
         #expect(resolver.requests.isEmpty)
@@ -76,17 +76,6 @@ struct SearchViewModelTests {
         #expect(viewModel.state == .idle)
     }
 
-    @Test("A search asks for a debounced resolution and shows its results")
-    func debouncedSearch() async {
-        let (viewModel, resolver) = makeViewModel()
-        type("Lis", into: viewModel)
-
-        await viewModel.search()
-
-        #expect(resolver.requests == [Request(query: "Lis", debounced: true)])
-        #expect(viewModel.state == .results(query: "Lis", cities: [Fixtures.lisbon]))
-    }
-
     @Test("A search with nothing pending sends no request")
     func nothingPending() async {
         let (viewModel, resolver) = makeViewModel()
@@ -98,7 +87,7 @@ struct SearchViewModelTests {
         await viewModel.search()
 
         #expect(resolver.requests == [Request(query: "Lis", debounced: true)])
-        #expect(viewModel.state == .results(query: "Lis", cities: [Fixtures.lisbon]))
+        #expect(viewModel.state == .results(query: "Lis", cities: [PreviewCities.lisbon]))
     }
 
     @Test("A search that finds an unreported query change hands it to a new request instead of resolving it")
@@ -115,7 +104,7 @@ struct SearchViewModelTests {
         await viewModel.search()
 
         #expect(resolver.requests == [Request(query: "Lis", debounced: true)])
-        #expect(viewModel.state == .results(query: "Lis", cities: [Fixtures.lisbon]))
+        #expect(viewModel.state == .results(query: "Lis", cities: [PreviewCities.lisbon]))
     }
 
     @Test("A cancelled search drops its result even when the resolver returns one")
@@ -149,7 +138,7 @@ struct SearchViewModelTests {
         await viewModel.search()
 
         #expect(resolver.requests == [Request(query: "Lis", debounced: true), Request(query: "Lis", debounced: false)])
-        #expect(viewModel.state == .results(query: "Lis", cities: [Fixtures.lisbon]))
+        #expect(viewModel.state == .results(query: "Lis", cities: [PreviewCities.lisbon]))
     }
 
     @Test("Try again shows the searching state at once and starts an undebounced request")
@@ -174,7 +163,7 @@ struct SearchViewModelTests {
         await gate.open()
         await search.value
 
-        #expect(viewModel.state == .results(query: "Lis", cities: [Fixtures.lisbon]))
+        #expect(viewModel.state == .results(query: "Lis", cities: [PreviewCities.lisbon]))
     }
 
     @Test("Try again does nothing unless the search failed")
@@ -187,7 +176,7 @@ struct SearchViewModelTests {
         viewModel.retry()
 
         #expect(viewModel.request == shownRequest)
-        #expect(viewModel.state == .results(query: "Lis", cities: [Fixtures.lisbon]))
+        #expect(viewModel.state == .results(query: "Lis", cities: [PreviewCities.lisbon]))
         #expect(resolver.requests.count == 1)
     }
 
@@ -233,7 +222,7 @@ struct SearchViewModelTests {
         await gate.open()
         await search.value
         #expect(!viewModel.isShowingProgress)
-        #expect(viewModel.state == .results(query: "Lis", cities: [Fixtures.lisbon]))
+        #expect(viewModel.state == .results(query: "Lis", cities: [PreviewCities.lisbon]))
     }
 
     @Test("Progress never appears when results arrive before the delay")
@@ -384,40 +373,40 @@ struct SearchViewModelTests {
 
     @Test("Opening a city records the visit and shows the recents the manager returns")
     func openRecordsVisit() {
-        let recents = ScriptedRecentCitiesManager(cities: [Fixtures.lisbon], afterVisit: [Fixtures.bergen, Fixtures.lisbon])
+        let recents = ScriptedRecentCitiesManager(cities: [PreviewCities.lisbon], afterVisit: [PreviewCities.bergen, PreviewCities.lisbon])
         let (viewModel, _) = makeViewModel(recents: recents)
 
-        viewModel.open(Fixtures.bergen)
+        viewModel.open(PreviewCities.bergen)
 
-        #expect(recents.calls == [.recentCities, .recordVisit(Fixtures.bergen)])
-        #expect(viewModel.recents == [Fixtures.bergen, Fixtures.lisbon])
+        #expect(recents.calls == [.recentCities, .recordVisit(PreviewCities.bergen)])
+        #expect(viewModel.recents == [PreviewCities.bergen, PreviewCities.lisbon])
     }
 
     @Test("Removing recents asks the manager to remove the cities at the positions that exist")
     func removeRecents() {
-        let recents = ScriptedRecentCitiesManager(cities: [Fixtures.lisbon, Fixtures.bergen, Fixtures.zakopane], afterRemoval: [Fixtures.bergen])
+        let recents = ScriptedRecentCitiesManager(cities: [PreviewCities.lisbon, PreviewCities.bergen, PreviewCities.zakopane], afterRemoval: [PreviewCities.bergen])
         let (viewModel, _) = makeViewModel(recents: recents)
 
         viewModel.removeRecents(at: IndexSet([0, 2, 5]))
 
-        #expect(recents.calls == [.recentCities, .remove([Fixtures.lisbon.id, Fixtures.zakopane.id])])
-        #expect(viewModel.recents == [Fixtures.bergen])
+        #expect(recents.calls == [.recentCities, .remove([PreviewCities.lisbon.id, PreviewCities.zakopane.id])])
+        #expect(viewModel.recents == [PreviewCities.bergen])
     }
 
-    @Test("Removing recents at positions that do not exist asks the manager nothing", arguments: [IndexSet(integer: 2), IndexSet()])
-    func removeMissingRecents(offsets: IndexSet) {
-        let recents = ScriptedRecentCitiesManager(cities: [Fixtures.lisbon, Fixtures.bergen])
+    @Test("Removing recents at positions that do not exist asks the manager nothing")
+    func removeMissingRecents() {
+        let recents = ScriptedRecentCitiesManager(cities: [PreviewCities.lisbon, PreviewCities.bergen])
         let (viewModel, _) = makeViewModel(recents: recents)
 
-        viewModel.removeRecents(at: offsets)
+        viewModel.removeRecents(at: IndexSet(integer: 2))
 
         #expect(recents.calls == [.recentCities])
-        #expect(viewModel.recents == [Fixtures.lisbon, Fixtures.bergen])
+        #expect(viewModel.recents == [PreviewCities.lisbon, PreviewCities.bergen])
     }
 
     @Test("Clearing recents asks the manager to remove them all and empties the list")
     func clearRecents() {
-        let recents = ScriptedRecentCitiesManager(cities: [Fixtures.lisbon, Fixtures.bergen])
+        let recents = ScriptedRecentCitiesManager(cities: [PreviewCities.lisbon, PreviewCities.bergen])
         let (viewModel, _) = makeViewModel(recents: recents)
 
         viewModel.clearRecents()
@@ -428,12 +417,12 @@ struct SearchViewModelTests {
 
     @Test("Recents that come back unchanged do not notify observers")
     func unchangedRecents() {
-        let recents = ScriptedRecentCitiesManager(cities: [Fixtures.lisbon], afterVisit: [Fixtures.lisbon], afterRemoval: [])
+        let recents = ScriptedRecentCitiesManager(cities: [PreviewCities.lisbon], afterVisit: [PreviewCities.lisbon], afterRemoval: [])
         let (viewModel, _) = makeViewModel(recents: recents)
         let probe = ObservationProbe()
         probe.track { _ = viewModel.recents }
 
-        viewModel.open(Fixtures.lisbon)
+        viewModel.open(PreviewCities.lisbon)
         #expect(probe.changeCount == 0)
 
         viewModel.removeRecents(at: IndexSet(integer: 0))

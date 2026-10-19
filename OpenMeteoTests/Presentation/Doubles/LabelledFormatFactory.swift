@@ -6,18 +6,17 @@
 //
 
 import Foundation
+import Logic
 @testable import OpenMeteo
 
 @MainActor
 final class LabelledFormatFactory: ForecastFormatMaking {
-    private(set) var madeFormats: [LabelledForecastFormat] = []
+    private(set) var requestedCities: [City] = []
+    private var madeFormats: [LabelledForecastFormat] = []
 
-    var requestedTimeZones: [TimeZone] {
-        madeFormats.map(\.timeZone)
-    }
-
-    func format(forCityIn timeZone: TimeZone) -> any ForecastFormatting {
-        let format = LabelledForecastFormat(timeZone: timeZone)
+    func format(for city: City) -> any ForecastFormatting {
+        let format = LabelledForecastFormat(timeZone: city.timeZone ?? .gmt)
+        requestedCities.append(city)
         madeFormats.append(format)
         return format
     }

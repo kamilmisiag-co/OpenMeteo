@@ -11,10 +11,8 @@ import Utils
 
 extension City {
     var subtitle: String {
-        let region = region?.trimmingCharacters(in: .whitespaces) ?? ""
-        let country = country.trimmingCharacters(in: .whitespaces)
-        guard !region.isEmpty else { return country }
-        guard !country.isEmpty else { return region }
+        guard let region = region?.nonBlank else { return country.nonBlank ?? "" }
+        guard let country = country.nonBlank else { return region }
         return String(localized: .citySubtitle(region, country))
     }
 

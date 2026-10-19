@@ -7,6 +7,17 @@
 
 import Foundation
 import Logic
+import Utils
+
+protocol DayCaptioning {
+    func caption(for activity: Activity, weather: DailyWeather, assessment: DayAssessment?, format: any ForecastFormatting) -> String
+}
+
+extension DayCaptioning {
+    func caption(onDay day: Int, of outlook: ActivityOutlook, weather: DailyWeather, format: any ForecastFormatting) -> String {
+        caption(for: outlook.activity, weather: weather, assessment: outlook.days.element(at: day), format: format)
+    }
+}
 
 struct DayCaptionWriter: DayCaptioning {
     func caption(for activity: Activity, weather: DailyWeather, assessment: DayAssessment?, format: any ForecastFormatting) -> String {

@@ -14,6 +14,7 @@ import Testing
 struct ComponentSnapshotTests {
     private let week: [Int?] = [82, 86, 92, 88, 80, 52, 66]
     private let initials = ["T", "F", "S", "S", "M", "T", "W"]
+    private let openMeteo = URL(string: "https://open-meteo.com/")!
 
     @Test func scoreRing() {
         assertComponent(
@@ -120,8 +121,8 @@ struct ComponentSnapshotTests {
     @Test func attributionFooter() {
         assertComponent(
             VStack(spacing: 16) {
-                AttributionFooter(updated: "09:42", link: URL(string: "https://open-meteo.com/"))
-                AttributionFooter(link: URL(string: "https://open-meteo.com/"))
+                AttributionFooter(updated: "09:42", link: openMeteo)
+                AttributionFooter(link: openMeteo)
             }
         )
     }

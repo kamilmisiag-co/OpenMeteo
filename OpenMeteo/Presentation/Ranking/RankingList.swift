@@ -12,20 +12,14 @@ import SwiftUI
 
 struct RankingList: View {
     let presentation: RankingPresentation
-    let openMeteo: URL?
+    let openMeteo: URL
     @Binding var selection: Int?
     let onShowWeek: () -> Void
     let onSelect: (Activity) -> Void
 
     var body: some View {
         List {
-            if let banner = presentation.banner {
-                Section {
-                    StatusBanner(kind: banner.kind, message: banner.message)
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
-                }
-            }
+            BannerSection(banner: presentation.banner)
 
             Section {
                 ForecastStrip(title: presentation.stripTitle, days: presentation.stripDays, selection: $selection)

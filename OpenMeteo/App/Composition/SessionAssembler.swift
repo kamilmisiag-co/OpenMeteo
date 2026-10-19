@@ -14,9 +14,9 @@ struct SessionAssembler {
             search: SearchViewModel(dependencies: searchDependencies(services: services)),
             navigator: AppNavigator(rankings: makeRankingViewModels(services: services, locale: locale, deviceTimeZone: deviceTimeZone)),
             links: AttributionLinks(
-                openMeteo: URL(string: AppStandard.openMeteoURLString),
-                licence: URL(string: AppStandard.licenceURLString),
-                geoNames: URL(string: AppStandard.geoNamesURLString)
+                openMeteo: AppStandard.openMeteoURL,
+                licence: AppStandard.licenceURL,
+                geoNames: AppStandard.geoNamesURL
             ),
             dayCount: services.dayCount
         )
@@ -26,7 +26,7 @@ struct SessionAssembler {
         RankingViewModelFactory(
             dependencies: rankingDependencies(
                 services: services,
-                formats: LocaleForecastFormatFactory(locale: locale, deviceTimeZone: deviceTimeZone)
+                formats: LocaleForecastFormatFactory(locale: locale, deviceTimeZone: deviceTimeZone, fallbackTimeZone: services.fallbackTimeZone)
             )
         )
     }
@@ -66,7 +66,6 @@ struct SessionAssembler {
                 reasons: reasons,
                 captions: captions,
                 banners: banners,
-                fallbackTimeZone: services.fallbackTimeZone,
                 precipitationLabelThreshold: AppStandard.precipitationLabelThreshold,
                 placeholderDayCount: services.dayCount
             ),
@@ -75,8 +74,7 @@ struct SessionAssembler {
                 reasons: reasons,
                 factors: FactorSummaryWriter(dayRanges: dayRanges),
                 captions: captions,
-                banners: banners,
-                fallbackTimeZone: services.fallbackTimeZone
+                banners: banners
             ),
             standardDayCount: services.dayCount
         )

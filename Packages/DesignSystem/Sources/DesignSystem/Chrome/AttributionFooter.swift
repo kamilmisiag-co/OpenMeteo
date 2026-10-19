@@ -9,9 +9,9 @@ import SwiftUI
 
 public struct AttributionFooter: View {
     var updated: String?
-    var link: URL?
+    let link: URL
 
-    public init(updated: String? = nil, link: URL?) {
+    public init(updated: String? = nil, link: URL) {
         self.updated = updated
         self.link = link
     }
@@ -22,13 +22,8 @@ public struct AttributionFooter: View {
                 Text(.attributionUpdated(updated))
                     .foregroundStyle(.secondary)
             }
-            if let link {
-                Link(destination: link) {
-                    Text(.attributionOpenMeteo)
-                }
-            } else {
+            Link(destination: link) {
                 Text(.attributionOpenMeteo)
-                    .foregroundStyle(.secondary)
             }
         }
         .font(.footnote)
@@ -38,6 +33,6 @@ public struct AttributionFooter: View {
 }
 
 #Preview("Attribution") {
-    AttributionFooter(updated: "09:42", link: URL(string: "https://open-meteo.com/"))
+    AttributionFooter(updated: "09:42", link: URL(string: "https://open-meteo.com/")!)
         .padding()
 }

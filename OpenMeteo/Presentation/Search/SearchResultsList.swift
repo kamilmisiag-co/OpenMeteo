@@ -14,7 +14,7 @@ struct SearchResultsList: View {
     let cities: [City]
     let highlight: String
     let isSearching: Bool
-    let geoNames: URL?
+    let geoNames: URL
     let onOpen: (City) -> Void
 
     var body: some View {
@@ -37,21 +37,12 @@ struct SearchResultsList: View {
                     }
                 }
             } footer: {
-                attribution
+                Link(destination: geoNames) {
+                    Text(.searchResultsAttribution)
+                }
             }
             .headerProminence(.increased)
         }
         .listStyle(.insetGrouped)
-    }
-
-    @ViewBuilder
-    private var attribution: some View {
-        if let geoNames {
-            Link(destination: geoNames) {
-                Text(.searchResultsAttribution)
-            }
-        } else {
-            Text(.searchResultsAttribution)
-        }
     }
 }

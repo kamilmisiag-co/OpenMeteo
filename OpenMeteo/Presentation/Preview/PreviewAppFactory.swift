@@ -20,7 +20,7 @@ struct PreviewAppFactory {
     var forecastMode = SampleForecastProvider.Mode.live
     var forecastLatency = Duration.zero
     var locale = Locale(identifier: "en_GB")
-    var timeZone = TimeZone(identifier: "Europe/Lisbon") ?? .gmt
+    var timeZone = TimeZone(identifier: "Europe/Lisbon")!
     var now = PreviewForecasts.referenceNow
 
     func makeSession() -> AppSession {

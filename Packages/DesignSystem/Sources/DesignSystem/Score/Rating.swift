@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Utils
 
 nonisolated public enum Rating: CaseIterable, Hashable, Sendable {
     case excellent
@@ -15,16 +16,9 @@ nonisolated public enum Rating: CaseIterable, Hashable, Sendable {
     case notSuitable
 
     public init(score: Int?) {
-        guard let score else {
-            self = .notSuitable
-            return
-        }
-        switch score {
-        case 80...: self = .excellent
-        case 60..<80: self = .good
-        case 40..<60: self = .fair
-        default: self = .poor
-        }
+        self = score.flatMap { score in
+            Self.allCases.first { $0.range?.contains(score.clamped(to: 0...100)) == true }
+        } ?? .notSuitable
     }
 
     public var range: ClosedRange<Int>? {

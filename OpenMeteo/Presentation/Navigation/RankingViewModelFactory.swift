@@ -7,6 +7,10 @@
 
 import Logic
 
+protocol RankingViewModelMaking {
+    func makeRankingViewModel(for city: City) -> RankingViewModel
+}
+
 struct RankingViewModelFactory: RankingViewModelMaking {
     private let dependencies: RankingViewModel.Dependencies
 

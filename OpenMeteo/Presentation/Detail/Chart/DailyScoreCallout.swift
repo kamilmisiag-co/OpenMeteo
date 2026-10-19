@@ -11,8 +11,6 @@ import SwiftUI
 struct DailyScoreCallout: View {
     let bar: ActivityDetailBar
 
-    @ScaledMetric(relativeTo: .subheadline) private var dotDiameter: CGFloat = 8
-
     var body: some View {
         let rating = Rating(score: bar.score)
         VStack(alignment: .leading, spacing: 1) {
@@ -20,9 +18,7 @@ struct DailyScoreCallout: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             HStack(spacing: 6) {
-                Circle()
-                    .fill(rating.color)
-                    .frame(width: dotDiameter, height: dotDiameter)
+                RatingDot(rating: rating, size: .small)
                 if let score = bar.score {
                     Text(score, format: .number)
                         .font(.system(.headline, design: .rounded))

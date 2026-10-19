@@ -6,30 +6,15 @@
 //
 
 import Foundation
-import OSLog
 import SwiftUI
 
 @main
 struct OpenMeteoApp: App {
-    @State private var launch: AppLaunchState
-
-    init() {
-        let logSubsystem = Bundle.main.bundleIdentifier ?? AppStandard.fallbackLogSubsystem
-        let launcher = AppLauncher(
-            composer: AppComposer(logSubsystem: logSubsystem),
-            failures: LoggerLaunchFailureReporter(logger: Logger(subsystem: logSubsystem, category: AppStandard.launchLogCategory))
-        )
-        _launch = State(initialValue: launcher.launch())
-    }
+    @State private var session = AppComposer(logSubsystem: Bundle.main.bundleIdentifier!).makeSession()
 
     var body: some Scene {
         WindowGroup {
-            switch launch {
-            case .ready(let session):
-                RootView(session: session)
-            case .failed:
-                StartupFailureView()
-            }
+            RootView(session: session)
         }
     }
 }

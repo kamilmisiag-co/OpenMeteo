@@ -48,15 +48,9 @@ struct HowScoresSheet: View {
                 }
 
                 Section {
-                    if let openMeteo = links.openMeteo {
-                        Link(.howScoresDataOpenMeteo, destination: openMeteo)
-                    }
-                    if let licence = links.licence {
-                        Link(.howScoresDataLicence, destination: licence)
-                    }
-                    if let geoNames = links.geoNames {
-                        Link(.howScoresDataGeoNames, destination: geoNames)
-                    }
+                    Link(.howScoresDataOpenMeteo, destination: links.openMeteo)
+                    Link(.howScoresDataLicence, destination: links.licence)
+                    Link(.howScoresDataGeoNames, destination: links.geoNames)
                 } header: {
                     Text(.howScoresDataHeader)
                 } footer: {

@@ -8,7 +8,7 @@
 import Foundation
 
 struct AttributionLinks: Hashable {
-    let openMeteo: URL?
-    let licence: URL?
-    let geoNames: URL?
+    let openMeteo: URL
+    let licence: URL
+    let geoNames: URL
 }

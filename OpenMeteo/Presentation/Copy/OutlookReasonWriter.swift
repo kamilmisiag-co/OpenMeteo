@@ -10,6 +10,10 @@ import Foundation
 import Logic
 import Utils
 
+protocol OutlookReasoning {
+    func reason(for outlook: ActivityOutlook, days: [DailyWeather], format: any ForecastFormatting) -> String
+}
+
 struct OutlookReasonWriter: OutlookReasoning {
     private typealias Clause = (text: String, dayCount: Int)
 

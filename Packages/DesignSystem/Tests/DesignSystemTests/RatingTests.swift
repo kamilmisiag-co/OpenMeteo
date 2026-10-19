@@ -19,6 +19,14 @@ struct RatingTests {
         #expect(Rating(score: score) == expected)
     }
 
+    @Test("Scores outside 0–100 take the rating at the nearer end of the scale", arguments: zip(
+        [101, 250, -1, -40],
+        [Rating.excellent, .excellent, .poor, .poor]
+    ))
+    func clampsOutOfRangeScore(score: Int, expected: Rating) {
+        #expect(Rating(score: score) == expected)
+    }
+
     @Test("A missing score is a hard blocker, not a low score")
     func nilIsNotSuitable() {
         #expect(Rating(score: nil) == .notSuitable)

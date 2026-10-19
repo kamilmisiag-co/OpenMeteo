@@ -44,7 +44,7 @@ public struct DailyBars: View {
 
     private func height(for score: Int?, maximum: CGFloat) -> CGFloat {
         guard let score else { return 2 }
-        return max(2, maximum * CGFloat(score.clamped(to: 0...100)) / 100)
+        return max(2, maximum * CGFloat(score).fraction(of: 0...100))
     }
 
     private func cardBar(_ index: Int) -> some View {

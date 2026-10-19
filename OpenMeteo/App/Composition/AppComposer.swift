@@ -13,7 +13,7 @@ import OSLog
 import Storage
 import Utils
 
-struct AppComposer: AppComposing {
+struct AppComposer {
     private let logSubsystem: String
 
     init(logSubsystem: String) {

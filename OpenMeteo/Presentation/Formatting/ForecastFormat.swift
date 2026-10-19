@@ -8,6 +8,28 @@
 import Foundation
 import Utils
 
+protocol ForecastFormatting {
+    var noValue: String { get }
+    func temperature(_ celsius: Double) -> String
+    func temperatureRange(_ lowCelsius: Double, _ highCelsius: Double) -> String
+    func speed(_ kmh: Double) -> String
+    func speedRange(_ lowKmh: Double, _ highKmh: Double) -> String
+    func snowfall(_ centimetres: Double) -> String
+    func percent(_ fraction: Double?) -> String
+    func percentRange(_ lowFraction: Double, _ highFraction: Double) -> String
+    func isToday(_ date: Date, now: Date) -> Bool
+    func shortDay(_ date: Date, now: Date) -> String
+    func day(_ date: Date, now: Date) -> String
+    func dayWithDate(_ date: Date) -> String
+    func spokenDay(_ date: Date) -> String
+    func dayInitial(_ date: Date) -> String
+    func weekday(_ date: Date) -> String
+    func time(_ date: Date) -> String
+    func dayAndTime(_ date: Date) -> String
+    func timestamp(_ date: Date, now: Date) -> String
+    func list(_ items: [String]) -> String
+}
+
 struct ForecastFormat: ForecastFormatting {
     private let locale: Locale
     private let cityCalendar: Calendar
@@ -29,6 +51,10 @@ struct ForecastFormat: ForecastFormatting {
         self.deviceCalendar = deviceCalendar
         cityDayStyle = Date.FormatStyle(locale: locale, calendar: cityCalendar, timeZone: cityTimeZone)
         deviceStyle = Date.FormatStyle(locale: locale, calendar: deviceCalendar, timeZone: deviceTimeZone)
+    }
+
+    var noValue: String {
+        String(localized: .formatNoValue)
     }
 
     func temperature(_ celsius: Double) -> String {
@@ -112,10 +138,6 @@ struct ForecastFormat: ForecastFormatting {
 
     func list(_ items: [String]) -> String {
         items.formatted(.list(type: .and).locale(locale))
-    }
-
-    private var noValue: String {
-        String(localized: .formatNoValue)
     }
 
     private func degrees(_ celsius: Double) -> Int? {

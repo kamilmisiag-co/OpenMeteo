@@ -38,7 +38,7 @@ final class RecordingDetailPresenter: ActivityDetailPresenting {
             days: [],
             factors: [],
             scoringNote: "now \(RecordingRankingPresenter.seconds(request.now))",
-            banner: RecordingRankingPresenter.labelledBanner(for: request.freshness)
+            banner: LabelledFreshnessBanners.labelledBanner(for: request.freshness)
         )
     }
 }

@@ -15,7 +15,6 @@ struct RankingScreen: View {
     let onSelect: (Activity) -> Void
 
     @State private var isShowingHowScores = false
-    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -31,16 +30,7 @@ struct RankingScreen: View {
                     }
                 }
             }
-            .sheet(isPresented: $isShowingHowScores) {
-                HowScoresSheet(dayCount: viewModel.dayCount, links: links)
-            }
-            .task {
-                await viewModel.load()
-            }
-            .onChange(of: scenePhase) { _, phase in
-                guard phase == .active else { return }
-                viewModel.updateClock()
-            }
+            .rankingLifecycle(of: viewModel, links: links, isShowingHowScores: $isShowingHowScores)
             .onChange(of: presentation?.banner) { _, banner in
                 guard let banner else { return }
                 AccessibilityNotification.Announcement(banner.message).post()
@@ -50,9 +40,7 @@ struct RankingScreen: View {
     @ViewBuilder
     private func content(_ presentation: RankingPresentation?) -> some View {
         if let failure = viewModel.failure {
-            ForecastFailureView(failure: failure) {
-                await viewModel.retry()
-            }
+            RetryableFailureView(failure: failure, onRetry: viewModel.retry)
         } else if let presentation {
             RankingList(
                 presentation: presentation,

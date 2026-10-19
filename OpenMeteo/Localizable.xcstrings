@@ -760,6 +760,17 @@
         }
       }
     },
+    "failure.retry": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        }
+      }
+    },
     "format.degrees": {
       "extractionState": "manual",
       "localizations": {
@@ -1043,17 +1054,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Check your connection and try again."
-          }
-        }
-      }
-    },
-    "ranking.error.retry": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Try Again"
           }
         }
       }
@@ -1467,17 +1467,6 @@
         }
       }
     },
-    "search.unavailable.retry": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Try Again"
-          }
-        }
-      }
-    },
     "search.unavailable.service.message": {
       "extractionState": "manual",
       "localizations": {
@@ -1496,28 +1485,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Search unavailable"
-          }
-        }
-      }
-    },
-    "startup.failure.message": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The app couldn’t set up its connection to Open-Meteo."
-          }
-        }
-      }
-    },
-    "startup.failure.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Can’t start Where to?"
           }
         }
       }

@@ -46,7 +46,7 @@ final class RecordingRankingPresenter: RankingPresenting {
             topPick: request.summary.topPick.map(item),
             others: request.summary.others.map(item),
             bestDay: nil,
-            banner: labelledBanner(for: request.freshness),
+            banner: LabelledFreshnessBanners.labelledBanner(for: request.freshness),
             updated: "now \(seconds(request.now))"
         )
     }
@@ -67,14 +67,6 @@ final class RecordingRankingPresenter: RankingPresenting {
             banner: nil,
             updated: ""
         )
-    }
-
-    static func labelledBanner(for freshness: Freshness) -> BannerContent? {
-        switch freshness {
-        case .fresh: nil
-        case .stale(let since): BannerContent(kind: .stale, message: "stale since \(seconds(since))")
-        case .offline(let since): BannerContent(kind: .offline, message: "offline since \(seconds(since))")
-        }
     }
 
     static func seconds(_ date: Date) -> Int {
