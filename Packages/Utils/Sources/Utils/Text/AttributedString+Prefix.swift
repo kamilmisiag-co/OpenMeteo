@@ -11,7 +11,7 @@ extension AttributedString {
     public func applying(_ attributes: AttributeContainer, toPrefixMatching prefix: String) -> AttributedString {
         var result = self
         guard !prefix.isEmpty,
-              let range = result.range(of: prefix, options: [.anchored, .caseInsensitive, .diacriticInsensitive]) else { return result }
+              let range = result.range(of: prefix, options: TextMatching.prefixOptions) else { return result }
         result[range].mergeAttributes(attributes)
         return result
     }

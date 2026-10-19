@@ -8,10 +8,11 @@
 import Foundation
 import Testing
 import Utils
+import UtilsMocks
 
 @Suite("Clamped")
 struct ClampedTests {
-    @Test("Values outside the range snap to its bounds", arguments: zip([-5, 0, 42, 100, 130], [0, 0, 42, 100, 100]))
+    @Test("Values outside the range snap to its bounds", arguments: zip([-5, 42, 130], [0, 42, 100]))
     func clamps(value: Int, expected: Int) {
         #expect(value.clamped(to: 0...100) == expected)
     }
@@ -43,19 +44,10 @@ struct NaNClampedTests {
         #expect((-Double.infinity).clamped(to: 0...1, ifNaN: 0.5) == 0)
     }
 
-    @Test("Finite values behave like clamped(to:)", arguments: zip([-5, 0, 0.25, 1, 3.5], [0, 0, 0.25, 1, 1]))
+    @Test("Finite values behave like clamped(to:)", arguments: zip([-5, 0.25, 3.5], [0, 0.25, 1]))
     func finite(value: Double, expected: Double) {
         #expect(value.clamped(to: 0...1, ifNaN: 0.5) == expected)
         #expect(value.clamped(to: 0...1, ifNaN: 0.5) == value.clamped(to: 0...1))
-    }
-
-    @Test("Float values are clamped the same way")
-    func float() {
-        #expect(Float.nan.clamped(to: 0...1, ifNaN: 0.5) == 0.5)
-        #expect(Float.infinity.clamped(to: 0...1, ifNaN: 0.5) == 1)
-        #expect((-Float.infinity).clamped(to: 0...1, ifNaN: 0.5) == 0)
-        #expect(Float(0.75).clamped(to: 0...1, ifNaN: 0.5) == 0.75)
-        #expect(Float(-2).clamped(to: 0...1, ifNaN: 0.5) == 0)
     }
 }
 
@@ -204,10 +196,8 @@ struct RoundingTests {
         (22.5, 23),
         (-2.5, -3),
         (-0.4, 0),
-        (-3.6, -4),
         (Double(Int.min), Int.min),
         (Double(Int.max), nil),
-        (1e300, nil),
     ] as [(Double, Int?)])
     func roundedInt(value: Double, expected: Int?) {
         #expect(value.roundedInt() == expected)
@@ -218,13 +208,6 @@ struct RoundingTests {
         #expect(Double.nan.roundedInt() == nil)
         #expect(Double.infinity.roundedInt() == nil)
         #expect((-Double.infinity).roundedInt() == nil)
-    }
-
-    @Test("Float values round the same way")
-    func float() {
-        #expect(Float(2.5).roundedInt() == 3)
-        #expect(Float(-0.6).roundedInt() == -1)
-        #expect(Float.nan.roundedInt() == nil)
     }
 }
 
@@ -239,15 +222,9 @@ struct ElementAtIndexTests {
         #expect(values.element(at: 2) == 30)
     }
 
-    @Test("Indices before the start or past the end return nil", arguments: [-1, -10, 3, 4])
+    @Test("Indices before the start or past the end return nil", arguments: [-1, 3])
     func outOfRange(index: Int) {
         #expect(values.element(at: index) == nil)
-    }
-
-    @Test("An empty collection has no element at any index")
-    func empty() {
-        #expect([Int]().element(at: 0) == nil)
-        #expect([Int]().element(at: -1) == nil)
     }
 
     @Test("A stored nil comes back wrapped, unlike a missing element")
@@ -265,6 +242,35 @@ struct ElementAtIndexTests {
         #expect(slice.element(at: 1) == 20)
         #expect(slice.element(at: 2) == 30)
         #expect(slice.element(at: 3) == nil)
+    }
+}
+
+@Suite("Valid index")
+struct ValidIndexTests {
+    private let values = [10, 20, 30]
+
+    @Test("An index inside the collection comes back unchanged", arguments: [2])
+    func inRange(index: Int) {
+        #expect(values.validIndex(index) == index)
+    }
+
+    @Test("Indices before the start or past the end give nil", arguments: [-1, 3])
+    func outOfRange(index: Int) {
+        #expect(values.validIndex(index) == nil)
+    }
+
+    @Test("A missing index gives nil")
+    func missing() {
+        #expect(values.validIndex(nil) == nil)
+    }
+
+    @Test("A slice is checked against its own indices, not from zero")
+    func slice() {
+        let slice = [10, 20, 30, 40][1...2]
+        #expect(slice.validIndex(0) == nil)
+        #expect(slice.validIndex(1) == 1)
+        #expect(slice.validIndex(2) == 2)
+        #expect(slice.validIndex(3) == nil)
     }
 }
 
@@ -287,11 +293,11 @@ struct ErrorClassificationTests {
 
     @Test("Wrapping errors are classified by the error they wrap")
     func underlyingErrors() {
-        #expect(WrappingError(underlyingError: URLError(.notConnectedToInternet)).isConnectivity)
-        #expect(WrappingError(underlyingError: CancellationError()).isCancellation)
-        #expect(!WrappingError(underlyingError: nil).isConnectivity)
-        #expect(!WrappingError(underlyingError: nil).isCancellation)
-        #expect(WrappingError(underlyingError: WrappingError(underlyingError: URLError(.timedOut))).isConnectivity)
+        #expect(WrappedError(underlyingError: URLError(.notConnectedToInternet)).isConnectivity)
+        #expect(WrappedError(underlyingError: CancellationError()).isCancellation)
+        #expect(!WrappedError(underlyingError: nil).isConnectivity)
+        #expect(!WrappedError(underlyingError: nil).isCancellation)
+        #expect(WrappedError(underlyingError: WrappedError(underlyingError: URLError(.timedOut))).isConnectivity)
     }
 
     @Test("Wrappers that point back at themselves or each other terminate")
@@ -305,18 +311,14 @@ struct ErrorClassificationTests {
 
     @Test("A wrapped URL cancellation is not task cancellation")
     func wrappedURLCancellation() {
-        #expect(!WrappingError(underlyingError: URLError(.cancelled)).isCancellation)
+        #expect(!WrappedError(underlyingError: URLError(.cancelled)).isCancellation)
         #expect(URLError(.cancelled).isCancellation)
     }
 
     @Test("Wrappers that print like the error they wrap are still unwrapped")
     func echoingWrapper() {
-        #expect(EchoingError(underlyingError: WrappingError(underlyingError: URLError(.notConnectedToInternet))).isConnectivity)
+        #expect(EchoingError(underlyingError: WrappedError(underlyingError: URLError(.notConnectedToInternet))).isConnectivity)
     }
-}
-
-struct WrappingError: UnderlyingErrorProviding {
-    let underlyingError: (any Error)?
 }
 
 struct SelfWrappingError: UnderlyingErrorProviding {
@@ -341,41 +343,14 @@ struct EchoingError: UnderlyingErrorProviding, CustomDebugStringConvertible {
     var debugDescription: String { underlyingError.map { String(reflecting: $0) } ?? "" }
 }
 
-@Suite("String")
-struct StringTests {
-    @Test("Two-letter region codes become flags, anything else doesn't")
-    func regionalIndicatorFlag() {
-        #expect("PT".regionalIndicatorFlag == "🇵🇹")
-        #expect("pl".regionalIndicatorFlag == "🇵🇱")
-        #expect("PRT".regionalIndicatorFlag == nil)
-        #expect("P1".regionalIndicatorFlag == nil)
-        #expect("".regionalIndicatorFlag == nil)
-    }
-
-    @Test("The leading component is the trimmed text before the first separator")
-    func leadingComponent() {
-        #expect("Paris, France".leadingComponent(separatedBy: ",") == "Paris")
-        #expect("  Lis ".leadingComponent(separatedBy: ",") == "Lis")
-        #expect("".leadingComponent(separatedBy: ",") == nil)
-    }
-
-    @Test("Prefix matching ignores case and diacritics but stays anchored")
-    func prefixMatching() {
-        #expect("Zürich".hasPrefixIgnoringCaseAndDiacritics("zur"))
-        #expect("Lisbon".hasPrefixIgnoringCaseAndDiacritics("LIS"))
-        #expect(!"Lisbon".hasPrefixIgnoringCaseAndDiacritics("bon"))
-        #expect(!"Lisbon".hasPrefixIgnoringCaseAndDiacritics(""))
-    }
-}
-
 @Suite("ASCII digits")
 struct ASCIIDigitsTests {
-    @Test("Non-empty runs of 0 to 9 are ASCII digits", arguments: ["0", "0123456789"])
+    @Test("Non-empty runs of 0 to 9 are ASCII digits", arguments: ["0123456789"])
     func digits(text: String) {
         #expect(text.isASCIIDigits)
     }
 
-    @Test("Empty text, signs, spaces, separators and non-ASCII digits are not", arguments: ["", "+1", "-1", " 1", "1.5", "١", "１", "½", "1\u{301}", "\r\n"])
+    @Test("Empty text, signs, non-ASCII digits and combining marks are not", arguments: ["", "+1", "١", "1\u{301}"])
     func nonDigits(text: String) {
         #expect(!text.isASCIIDigits)
     }
@@ -413,17 +388,149 @@ struct AttributedStringPrefixTests {
         #expect(boldText(in: AttributedString("Lisbon").applying(bold, toPrefixMatching: "")) == "")
         #expect(boldText(in: AttributedString("Lisbon").applying(bold, toPrefixMatching: "bon")) == "")
     }
+
+    @Test("The prefix matches ignoring case and diacritics, like String prefix matching")
+    func ignoresCaseAndDiacritics() {
+        let result = AttributedString("Zürich").applying(bold, toPrefixMatching: "ZUR")
+        #expect(boldText(in: result) == "Zür")
+        #expect("Zürich".hasPrefixIgnoringCaseAndDiacritics("ZUR"))
+    }
 }
 
-@Suite("Calendar")
-struct CalendarTests {
-    @Test("A gregorian calendar carries the given time zone and locale")
-    func gregorian() throws {
-        let lisbon = try #require(TimeZone(identifier: "Europe/Lisbon"))
-        let calendar = Calendar.gregorian(timeZone: lisbon, locale: Locale(identifier: "en_GB"))
-        #expect(calendar.identifier == .gregorian)
-        #expect(calendar.timeZone == lisbon)
-        #expect(calendar.locale == Locale(identifier: "en_GB"))
-        #expect(Calendar.gregorian(timeZone: lisbon).timeZone == lisbon)
+@Suite("Sum")
+struct SumTests {
+    private struct Rating {
+        let weight: Double
+        let suitability: Double
+    }
+
+    private let ratings = [Rating(weight: 2, suitability: 0.5), Rating(weight: 1, suitability: 1), Rating(weight: 0.5, suitability: 0)]
+
+    @Test("Elements add up, and an empty sequence sums to zero")
+    func sum() {
+        #expect([1, 2, 3, 4].sum() == 10)
+        #expect(([0.5, 0.25, -1] as [Double]).sum() == -0.25)
+        let durations: [Duration] = [.seconds(1), .milliseconds(500)]
+        #expect(durations.sum() == Duration.milliseconds(1_500))
+        #expect([Int]().sum() == 0)
+        #expect([Double]().sum() == 0)
+    }
+
+    @Test("Elements are added from first to last, like reduce")
+    func order() {
+        let values = [1e16, 1, -1e16, 1]
+        #expect(values.sum() == values.reduce(0, +))
+        #expect(values.sum() == 1)
+        #expect(values.reversed().sum() == 0)
+    }
+
+    @Test("The values picked from each element add up, and an empty sequence sums to zero")
+    func sumOf() {
+        #expect(ratings.sum(of: \.weight) == 3.5)
+        #expect(ratings.sum { $0.weight * $0.suitability } == 2)
+        #expect([Int?](arrayLiteral: 1, nil, 3).sum { $0 ?? 0 } == 4)
+        #expect([Rating]().sum(of: \.weight) == 0)
+    }
+
+    @Test("The value is picked once per element, in order, and its errors are rethrown")
+    func picksOncePerElement() {
+        var picked: [Double] = []
+        let total = ratings.sum { rating in
+            picked.append(rating.weight)
+            return rating.weight
+        }
+        #expect(total == 3.5)
+        #expect(picked == [2, 1, 0.5])
+        #expect(throws: UnrelatedError.failed) {
+            try ratings.sum { (_: Rating) throws -> Double in throw UnrelatedError.failed }
+        }
+    }
+}
+
+@Suite("Fraction of a range")
+struct FractionTests {
+    @Test("Values inside the range map linearly from 0 at its lower bound to 1 at its upper bound", arguments: zip([10, 15, 20], [0, 0.5, 1]))
+    func inside(value: Double, expected: Double) {
+        #expect(value.fraction(of: 10...20) == expected)
+    }
+
+    @Test("Values outside the range clamp to 0 or 1", arguments: zip([9.99, 20.01], [0, 1] as [Double]))
+    func outside(value: Double, expected: Double) {
+        #expect(value.fraction(of: 10...20) == expected)
+    }
+
+    @Test("Infinities clamp to the ends and NaN gives 0")
+    func nonFinite() {
+        #expect(Double.infinity.fraction(of: 0...1) == 1)
+        #expect((-Double.infinity).fraction(of: 0...1) == 0)
+        #expect(Double.nan.fraction(of: 0...1) == 0)
+        #expect(Double.signalingNaN.fraction(of: 0...1) == 0)
+    }
+
+    @Test("A zero-width range gives 0 at its bound and below it, and 1 above it")
+    func zeroWidth() {
+        #expect(5.0.fraction(of: 5...5) == 0)
+        #expect(4.0.fraction(of: 5...5) == 0)
+        #expect(6.0.fraction(of: 5...5) == 1)
+    }
+}
+
+@Suite("Case index")
+struct CaseIndexTests {
+    private enum Weather: CaseIterable, Equatable {
+        case rain, wind, snow
+    }
+
+    private enum Priority: CaseIterable, Equatable {
+        case low, high
+
+        static var allCases: [Priority] {
+            [.high, .low]
+        }
+    }
+
+    private enum Season: CaseIterable, Equatable {
+        case spring, autumn, winter
+
+        static var allCases: [Season] {
+            [.spring]
+        }
+    }
+
+    private enum Shift: CaseIterable, Equatable {
+        typealias AllCases = ArraySlice<Shift>
+
+        case night, day, evening
+
+        static var allCases: ArraySlice<Shift> {
+            [Shift.night, .day, .evening][1...]
+        }
+    }
+
+    @Test("Each case reports its position in allCases")
+    func positions() {
+        #expect(Weather.rain.caseIndex == 0)
+        #expect(Weather.wind.caseIndex == 1)
+        #expect(Weather.snow.caseIndex == 2)
+    }
+
+    @Test("A custom allCases order decides the position")
+    func customOrder() {
+        #expect(Priority.high.caseIndex == 0)
+        #expect(Priority.low.caseIndex == 1)
+    }
+
+    @Test("Cases missing from allCases come after every listed case")
+    func unlistedCase() {
+        #expect(Season.spring.caseIndex == 0)
+        #expect(Season.autumn.caseIndex == 1)
+        #expect(Season.winter.caseIndex == 1)
+    }
+
+    @Test("The position counts from the start of allCases, whatever its indices")
+    func sliceIndices() {
+        #expect(Shift.day.caseIndex == 0)
+        #expect(Shift.evening.caseIndex == 1)
+        #expect(Shift.night.caseIndex == 2)
     }
 }

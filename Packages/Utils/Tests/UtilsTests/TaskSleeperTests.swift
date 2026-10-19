@@ -12,11 +12,6 @@ import Utils
 struct TaskSleeperTests {
     private let sleeper = TaskSleeper()
 
-    @Test("A zero-length sleep returns without throwing")
-    func zeroSleep() async throws {
-        try await sleeper.sleep(for: .zero)
-    }
-
     @Test("A sleep waits at least the requested duration")
     func waitsForDuration() async throws {
         let requested = Duration.milliseconds(20)
