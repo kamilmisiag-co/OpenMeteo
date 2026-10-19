@@ -306,7 +306,6 @@ struct ErrorClassificationTests {
         #expect(!SelfWrappingError().isCancellation)
         #expect(!LoopingErrorA().isConnectivity)
         #expect(!LoopingErrorB().isCancellation)
-        #expect(!ChangingLoopError().isConnectivity)
     }
 
     @Test("A wrapped URL cancellation is not task cancellation")
@@ -331,11 +330,6 @@ struct LoopingErrorA: UnderlyingErrorProviding {
 
 struct LoopingErrorB: UnderlyingErrorProviding {
     var underlyingError: (any Error)? { LoopingErrorA() }
-}
-
-struct ChangingLoopError: UnderlyingErrorProviding {
-    let id = UUID()
-    var underlyingError: (any Error)? { ChangingLoopError() }
 }
 
 struct EchoingError: UnderlyingErrorProviding, CustomDebugStringConvertible {

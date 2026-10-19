@@ -5,7 +5,6 @@
 //  Created by Kamil Misiag on 18/10/2026.
 //
 
-import DesignSystem
 import Foundation
 import Logic
 @testable import OpenMeteo

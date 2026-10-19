@@ -1,0 +1,7 @@
+project: OpenMeteo.xcworkspace
+schemes:
+  - OpenMeteo
+index_store_path: build/DerivedData/Index.noindex/DataStore
+baseline: .periphery-baseline.json
+relative_results: true
+strict: true
