@@ -16,10 +16,19 @@ struct OpenMeteoApp: App {
     init() {
         let logSubsystem = Bundle.main.bundleIdentifier ?? AppStandard.fallbackLogSubsystem
         let launcher = AppLauncher(
-            composer: AppComposer(logSubsystem: logSubsystem),
+            composer: Self.composer(logSubsystem: logSubsystem),
             failures: LoggerLaunchFailureReporter(logger: Logger(subsystem: logSubsystem, category: AppStandard.launchLogCategory))
         )
         _launch = State(initialValue: launcher.launch())
+    }
+
+    private static func composer(logSubsystem: String) -> any AppComposing {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains(AppStandard.sampleDataArgument) {
+            return SampleAppComposer()
+        }
+        #endif
+        return AppComposer(logSubsystem: logSubsystem)
     }
 
     var body: some Scene {

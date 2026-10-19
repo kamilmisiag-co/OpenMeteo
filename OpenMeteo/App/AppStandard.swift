@@ -18,4 +18,5 @@ enum AppStandard {
     static let storageLogCategory = "storage"
     static let fallbackLogSubsystem = "com.km.OpenMeteo"
     static let launchLogCategory = "launch"
+    static let sampleDataArgument = "--sample-data"
 }
