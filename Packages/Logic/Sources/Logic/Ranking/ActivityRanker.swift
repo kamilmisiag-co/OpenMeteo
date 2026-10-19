@@ -5,6 +5,12 @@
 //  Created by Kamil Misiag on 17/10/2026.
 //
 
+import Utils
+
+public protocol ActivityRanking: Sendable {
+    func rank(_ outlooks: [ActivityOutlook], onDay day: Int?) -> [RankedActivity]
+}
+
 public struct ActivityRanker: ActivityRanking {
     private struct Candidate {
         let outlook: ActivityOutlook
@@ -38,8 +44,7 @@ public struct ActivityRanker: ActivityRanking {
     }
 
     private func tieBreakPosition(of activity: Activity) -> Int {
-        tieBreakOrder.firstIndex(of: activity)
-            ?? tieBreakOrder.count + (Activity.allCases.firstIndex(of: activity) ?? Activity.allCases.count)
+        tieBreakOrder.firstIndex(of: activity) ?? tieBreakOrder.count + activity.caseIndex
     }
 
     private func precedes(_ lhs: Candidate, _ rhs: Candidate) -> Bool {

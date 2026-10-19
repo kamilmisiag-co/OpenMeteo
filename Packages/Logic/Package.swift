@@ -20,7 +20,11 @@ let package = Package(
         ),
         .target(
             name: "LogicMocks",
-            dependencies: ["Logic"],
+            dependencies: [
+                "Logic",
+                .product(name: "Utils", package: "Utils"),
+                .product(name: "UtilsMocks", package: "Utils"),
+            ],
         ),
         .testTarget(
             name: "LogicTests",

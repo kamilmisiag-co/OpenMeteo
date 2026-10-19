@@ -7,6 +7,10 @@
 
 import Utils
 
+public protocol FailureClassifying: Sendable {
+    func failure(for error: any Error) -> ServiceFailure
+}
+
 public struct ErrorFailureClassifier: FailureClassifying {
     public init() {}
 

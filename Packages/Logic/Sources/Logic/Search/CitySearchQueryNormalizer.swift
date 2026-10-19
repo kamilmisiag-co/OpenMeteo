@@ -5,6 +5,10 @@
 //  Created by Kamil Misiag on 17/10/2026.
 //
 
+public protocol SearchQueryNormalizing: Sendable {
+    func normalizedQuery(from rawQuery: String) -> String?
+}
+
 public struct CitySearchQueryNormalizer: SearchQueryNormalizing {
     private let minimumLength: Int
     private let separators: Set<Character>

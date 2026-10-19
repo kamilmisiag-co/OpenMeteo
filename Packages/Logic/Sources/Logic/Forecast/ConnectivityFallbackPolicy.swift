@@ -7,6 +7,10 @@
 
 import Utils
 
+public protocol CacheFallbackPolicy: Sendable {
+    func allowsCachedForecast(after error: any Error) -> Bool
+}
+
 public struct ConnectivityFallbackPolicy: CacheFallbackPolicy {
     public init() {}
 

@@ -7,6 +7,10 @@
 
 import Utils
 
+public protocol SearchFailureClassifying: Sendable {
+    func failure(for error: any Error) -> SearchFailure
+}
+
 public struct ErrorSearchFailureClassifier: SearchFailureClassifying {
     public init() {}
 

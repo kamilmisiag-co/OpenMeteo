@@ -7,6 +7,13 @@
 
 import Utils
 
+public protocol RecentCitiesManaging: Sendable {
+    func recentCities() -> [City]
+    func recordVisit(to city: City) -> [City]
+    func remove(_ cityIDs: Set<City.ID>) -> [City]
+    func removeAll()
+}
+
 public struct RecentCitiesService: RecentCitiesManaging {
     private let store: any RecentCitiesStoring
     private let maximumCount: Int
@@ -36,7 +43,7 @@ public struct RecentCitiesService: RecentCitiesManaging {
     }
 
     private func normalized(_ cities: [City]) -> [City] {
-        Array(cities.uniqued(by: \.id).prefix(max(maximumCount, 0)))
+        Array(cities.uniqued(by: \.id).prefix(maximumCount))
     }
 
     private func savingIfChanged(_ cities: [City], from stored: [City]) -> [City] {
