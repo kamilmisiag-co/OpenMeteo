@@ -6,17 +6,23 @@
 //
 
 import Foundation
+import Utils
+
+public protocol RecordStoring: Sendable {
+    func record<Record: Decodable>(_ type: Record.Type, forKey key: String) -> Record?
+    func save<Record: Encodable>(_ record: Record, forKey key: String)
+}
 
 public struct ReportingRecordStore: RecordStoring {
     private let store: any DataStoring
-    private let encoder: any ValueEncoding
-    private let decoder: any ValueDecoding
+    private let encoder: any DataEncoding
+    private let decoder: any DataDecoding
     private let reporter: any StorageFailureReporting
 
     public init(
         store: any DataStoring,
-        encoder: any ValueEncoding,
-        decoder: any ValueDecoding,
+        encoder: any DataEncoding,
+        decoder: any DataDecoding,
         reporter: any StorageFailureReporting
     ) {
         self.store = store

@@ -6,7 +6,6 @@ let package = Package(
     platforms: [.iOS("27.0")],
     products: [
         .library(name: "Networking", targets: ["Networking"]),
-        .library(name: "NetworkingStubs", targets: ["NetworkingStubs"]),
         .library(name: "NetworkingMocks", targets: ["NetworkingMocks"]),
     ],
     dependencies: [
@@ -20,13 +19,6 @@ let package = Package(
             ],
         ),
         .target(
-            name: "NetworkingStubs",
-            dependencies: [
-                "Networking",
-                .product(name: "Utils", package: "Utils"),
-            ],
-        ),
-        .target(
             name: "NetworkingMocks",
             dependencies: ["Networking"],
         ),
@@ -34,7 +26,6 @@ let package = Package(
             name: "NetworkingTests",
             dependencies: [
                 "Networking",
-                "NetworkingStubs",
                 "NetworkingMocks",
                 .product(name: "Utils", package: "Utils"),
                 .product(name: "UtilsMocks", package: "Utils"),

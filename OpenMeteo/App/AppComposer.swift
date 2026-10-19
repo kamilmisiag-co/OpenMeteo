@@ -20,17 +20,13 @@ struct AppComposer: AppComposing {
         self.logSubsystem = logSubsystem
     }
 
-    func makeSession() throws -> AppSession {
+    func makeSession() -> AppSession {
         let locale = Locale.autoupdatingCurrent
-        let deviceTimeZone = TimeZone.autoupdatingCurrent
-        let services = try services(
-            locale: locale,
-            fallbackTimeZone: TimeZone(identifier: deviceTimeZone.identifier) ?? deviceTimeZone
-        )
-        return SessionAssembler().makeSession(services: services, locale: locale, deviceTimeZone: deviceTimeZone)
+        let services = services(locale: locale, fallbackTimeZone: TimeZone.current)
+        return SessionAssembler().makeSession(services: services, locale: locale, deviceTimeZone: TimeZone.autoupdatingCurrent)
     }
 
-    private func services(locale: Locale, fallbackTimeZone: TimeZone) throws -> AppServices {
+    private func services(locale: Locale, fallbackTimeZone: TimeZone) -> AppServices {
         let dates = SystemDateProvider()
         let sleeper = TaskSleeper()
         let transport = URLSessionTransport(loader: urlSession())
@@ -38,8 +34,8 @@ struct AppComposer: AppComposing {
         let observers: [any NetworkObserver] = [
             LoggingNetworkObserver(logger: Logger(subsystem: logSubsystem, category: AppStandard.networkLogCategory)),
         ]
-        let geocodingClient = try client(host: OpenMeteoStandard.geocodingHost, transport: transport, retryPolicy: retryPolicy, sleeper: sleeper, observers: observers)
-        let forecastClient = try client(host: OpenMeteoStandard.forecastHost, transport: transport, retryPolicy: retryPolicy, sleeper: sleeper, observers: observers)
+        let geocodingClient = client(baseURL: OpenMeteoStandard.geocodingBaseURL, transport: transport, retryPolicy: retryPolicy, sleeper: sleeper, observers: observers)
+        let forecastClient = client(baseURL: OpenMeteoStandard.forecastBaseURL, transport: transport, retryPolicy: retryPolicy, sleeper: sleeper, observers: observers)
         let storageReporter = LoggerStorageFailureReporter(
             logger: Logger(subsystem: logSubsystem, category: AppStandard.storageLogCategory)
         )
@@ -78,43 +74,36 @@ struct AppComposer: AppComposing {
 
     private func urlSession() -> URLSession {
         let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = OpenMeteoStandard.requestTimeout / .seconds(1)
+        configuration.timeoutIntervalForRequest = OpenMeteoStandard.requestTimeout.timeInterval
         return URLSession(configuration: configuration)
     }
 
     private func client(
-        host: String,
+        baseURL: URL,
         transport: any HTTPTransport,
         retryPolicy: any RetryPolicy,
         sleeper: any Sleeping,
         observers: [any NetworkObserver]
-    ) throws -> any HTTPClient {
+    ) -> any HTTPClient {
         NetworkClient(
             requestBuilder: RequestBuilder(
                 configuration: RequestConfiguration(
-                    baseURL: try baseURL(host: host),
+                    baseURL: baseURL,
                     defaultHeaders: [:],
                     timeout: OpenMeteoStandard.requestTimeout,
                     cachePolicy: .useProtocolCachePolicy
                 ),
-                bodyEncoder: JSONBodyEncoder(encoder: JSONEncoder(), contentType: "application/json")
+                encoder: JSONEncoder(),
+                contentType: "application/json"
             ),
             interceptors: [],
             transport: transport,
             validator: StatusCodeValidator(acceptableStatusCodes: 200..<300),
-            decoder: JSONResponseDecoder(decoder: JSONDecoder()),
+            decoder: JSONDecoder(),
             retryPolicy: retryPolicy,
             sleeper: sleeper,
             observers: observers
         )
-    }
-
-    private func baseURL(host: String) throws -> URL {
-        var components = URLComponents()
-        components.scheme = OpenMeteoStandard.scheme
-        components.host = host
-        guard let url = components.url else { throw AppCompositionError.invalidBaseURL(host: host) }
-        return url
     }
 
     private func retryPolicy(dates: any DateProviding) -> any RetryPolicy {
@@ -137,7 +126,6 @@ struct AppComposer: AppComposing {
             client: client,
             requests: GeocodingRequestFactory(
                 resultLimit: OpenMeteoStandard.geocodingResultLimit,
-                allowedResultLimits: OpenMeteoStandard.geocodingResultLimits,
                 languageCodes: LocaleLanguageCodeProvider(locale: locale, fallbackLanguageCode: OpenMeteoStandard.fallbackLanguageCode)
             ),
             mapper: GeocodingCityMapper(regionNames: LocaleRegionNameProvider(locale: locale))
@@ -169,13 +157,10 @@ struct AppComposer: AppComposing {
             store: FileDataStore(
                 directory: root.appending(path: name, directoryHint: .isDirectory),
                 fileSystem: FoundationFileSystem(),
-                fileNames: SafeFileNameEncoder(
-                    allowedCharacters: StorageStandard.allowedKeyCharacters,
-                    fileExtension: StorageStandard.fileExtension
-                )
+                fileNames: SafeFileNameEncoder(fileExtension: StorageStandard.fileExtension)
             ),
-            encoder: JSONValueEncoder(encoder: JSONEncoder()),
-            decoder: JSONValueDecoder(decoder: JSONDecoder()),
+            encoder: JSONEncoder(),
+            decoder: JSONDecoder(),
             reporter: reporter
         )
     }

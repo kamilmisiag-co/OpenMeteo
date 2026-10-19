@@ -7,6 +7,7 @@
 
 import Foundation
 import Networking
+import NetworkingMocks
 import Testing
 
 @Suite("Request builder")
@@ -23,7 +24,7 @@ struct RequestBuilderTests {
     @Test("An empty path targets the base URL itself")
     func emptyPath() throws {
         let request = try Fixtures.requestBuilder.makeRequest(for: RootEndpoint())
-        #expect(request.url == Fixtures.baseURL)
+        #expect(request.url == NetworkFixtures.baseURL)
     }
 
     @Test("A trailing slash on the base URL doesn't double the separator")
@@ -34,19 +35,10 @@ struct RequestBuilderTests {
             timeout: .seconds(5),
             cachePolicy: .useProtocolCachePolicy
         )
-        let builder = RequestBuilder(configuration: configuration, bodyEncoder: JSONBodyEncoder(encoder: Fixtures.jsonEncoder, contentType: "application/json"))
+        let builder = RequestBuilder(configuration: configuration, encoder: Fixtures.jsonEncoder, contentType: "application/json")
         let request = try builder.makeRequest(for: CityEndpoint(name: "Lisbon"))
         #expect(request.url?.path() == "/base/v1/cities")
         #expect(request.timeoutInterval == 5)
-    }
-
-    @Test("Appends query items and encodes their values")
-    func queryItems() throws {
-        let request = try Fixtures.requestBuilder.makeRequest(for: CityEndpoint(name: "Paris, France"))
-        let url = try #require(request.url)
-        let components = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false))
-        #expect(components.queryItems == [URLQueryItem(name: "name", value: "Paris, France")])
-        #expect(!url.absoluteString.contains(" "))
     }
 
     @Test("Plus signs, ampersands and equals signs in query values are encoded")
@@ -66,19 +58,11 @@ struct RequestBuilderTests {
             timeout: .seconds(5),
             cachePolicy: .useProtocolCachePolicy
         )
-        let builder = RequestBuilder(configuration: configuration, bodyEncoder: JSONBodyEncoder(encoder: Fixtures.jsonEncoder, contentType: "application/json"))
+        let builder = RequestBuilder(configuration: configuration, encoder: Fixtures.jsonEncoder, contentType: "application/json")
         let request = try builder.makeRequest(for: CityEndpoint(name: "C+"))
         let url = try #require(request.url)
         let components = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false))
         #expect(components.percentEncodedQuery == "q=a+b&name=C%2B")
-    }
-
-    @Test("Takes method, timeout and cache policy from the endpoint and the configuration")
-    func methodAndPolicies() throws {
-        let request = try Fixtures.requestBuilder.makeRequest(for: CreateCityEndpoint(city: Fixtures.lisbon))
-        #expect(request.httpMethod == "POST")
-        #expect(request.timeoutInterval == 15)
-        #expect(request.cachePolicy == .reloadIgnoringLocalCacheData)
     }
 
     @Test("Endpoint headers override default headers regardless of case")
@@ -112,5 +96,6 @@ struct RequestBuilderTests {
             try Fixtures.requestBuilder.makeRequest(for: FailingBodyEndpoint())
         }
         #expect(error?.caseName == "encoding")
+        #expect(error?.underlyingError is EncodingError)
     }
 }

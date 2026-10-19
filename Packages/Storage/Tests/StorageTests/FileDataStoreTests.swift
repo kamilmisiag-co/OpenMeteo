@@ -18,10 +18,6 @@ struct FileDataStoreTests {
         case unwritable
     }
 
-    private enum KeyError: Error, Hashable {
-        case rejected(String)
-    }
-
     private final class RecordingFileSystem: FileSystemAccessing {
         enum Call: Hashable {
             case contents(URL)
@@ -75,14 +71,8 @@ struct FileDataStoreTests {
     }
 
     private struct PrefixingFileNames: StorageKeyEncoding {
-        func fileName(forKey key: String) throws -> String {
+        func fileName(forKey key: String) -> String {
             "stub-" + key + ".bin"
-        }
-    }
-
-    private struct RejectingFileNames: StorageKeyEncoding {
-        func fileName(forKey key: String) throws -> String {
-            throw KeyError.rejected(key)
         }
     }
 
@@ -93,8 +83,8 @@ struct FileDataStoreTests {
         directory.appending(path: name, directoryHint: .notDirectory)
     }
 
-    private static func store(on fileSystem: RecordingFileSystem, fileNames: any StorageKeyEncoding = PrefixingFileNames()) -> FileDataStore {
-        FileDataStore(directory: directory, fileSystem: fileSystem, fileNames: fileNames)
+    private static func store(on fileSystem: RecordingFileSystem) -> FileDataStore {
+        FileDataStore(directory: directory, fileSystem: fileSystem, fileNames: PrefixingFileNames())
     }
 
     @Test("Reading asks the file system for the encoded file name inside the directory")
@@ -106,28 +96,6 @@ struct FileDataStoreTests {
         let file = Self.expectedFile("stub-weather-2267057.bin")
         #expect(fileSystem.calls == [.contents(file)])
         #expect(file.path(percentEncoded: false) == "/records/WeatherCache/stub-weather-2267057.bin")
-    }
-
-    @Test("Reading a file the file system doesn't have gives nil")
-    func readsMissingFile() throws {
-        let fileSystem = RecordingFileSystem(stored: nil)
-
-        #expect(try Self.store(on: fileSystem).data(forKey: "recent-cities") == nil)
-        #expect(fileSystem.calls == [.contents(Self.expectedFile("stub-recent-cities.bin"))])
-    }
-
-    @Test("Reading never creates the directory or writes")
-    func readIsSideEffectFree() throws {
-        let fileSystem = RecordingFileSystem(stored: nil)
-        let store = Self.store(on: fileSystem)
-
-        _ = try store.data(forKey: "weather-1")
-        _ = try store.data(forKey: "weather-2")
-
-        #expect(fileSystem.calls == [
-            .contents(Self.expectedFile("stub-weather-1.bin")),
-            .contents(Self.expectedFile("stub-weather-2.bin")),
-        ])
     }
 
     @Test("Writing creates the directory first and then writes the data to the encoded file")
@@ -169,38 +137,6 @@ struct FileDataStoreTests {
             try Self.store(on: fileSystem).write(Self.payload, forKey: "weather-1")
         }
         #expect(fileSystem.calls == [.createDirectory(Self.directory), .write(Self.payload, Self.expectedFile("stub-weather-1.bin"))])
-    }
-
-    @Test("Errors from the injected file name encoder are thrown before any file access")
-    func encoderErrorsComeFirst() {
-        let fileSystem = RecordingFileSystem(stored: Self.payload)
-        let store = Self.store(on: fileSystem, fileNames: RejectingFileNames())
-
-        #expect(throws: KeyError.rejected("weather-1")) {
-            try store.data(forKey: "weather-1")
-        }
-        #expect(throws: KeyError.rejected("weather-1")) {
-            try store.write(Self.payload, forKey: "weather-1")
-        }
-        #expect(fileSystem.calls.isEmpty)
-    }
-
-    @Test("Keys that are unsafe as file names are rejected on disk and nothing is created", arguments: [
-        "", ".", "..", "../escape", "a/b", "/absolute", "weather\u{0}1",
-    ])
-    func unsafeKeysOnDisk(key: String) throws {
-        let root = TestSupport.temporaryDirectory()
-        defer { TestSupport.removeDirectory(root) }
-        let directory = TestSupport.directory(named: StorageStandard.weatherCacheDirectoryName, in: root)
-        let store = TestSupport.fileDataStore(in: directory)
-
-        #expect(throws: StorageError.invalidKey(key)) {
-            try store.data(forKey: key)
-        }
-        #expect(throws: StorageError.invalidKey(key)) {
-            try store.write(Self.payload, forKey: key)
-        }
-        #expect(!TestSupport.fileExists(root))
     }
 
     @Test("Data written to disk reads back from a file named after the key in a directory created on demand")

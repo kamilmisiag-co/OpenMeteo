@@ -7,6 +7,10 @@
 
 import OSLog
 
+public protocol StorageFailureReporting: Sendable {
+    func report(_ error: any Error, during operation: StorageOperation)
+}
+
 public struct LoggerStorageFailureReporter: StorageFailureReporting {
     private let logger: Logger
 
