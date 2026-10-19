@@ -13,11 +13,11 @@ struct ActivityDetailPage {
     let activity: String
     let ranking: RankingPage
 
-    var daysHeader: XCUIElement { app.staticTexts["Day by day"] }
+    var chartHeader: XCUIElement { app.staticTexts["Daily score"] }
     private var navigationBar: XCUIElement { app.navigationBars[activity] }
 
     func back() -> RankingPage {
-        navigationBar.buttons.element(boundBy: 0).tap()
+        navigationBar.buttons["BackButton"].tap()
         return ranking.waitUntilShown()
     }
 

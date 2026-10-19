@@ -26,7 +26,7 @@ final class SearchUITests: XCTestCase {
         let search = SearchPage.launch().type("L")
 
         search.emptyStateTitle.waitUntilExists()
+        XCTAssertFalse(search.resultsHeader.waitForExistence(timeout: 2))
         XCTAssertFalse(search.searchingLabel.exists)
-        XCTAssertFalse(search.resultsHeader.exists)
     }
 }

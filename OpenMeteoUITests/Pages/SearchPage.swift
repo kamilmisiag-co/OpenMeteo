@@ -20,7 +20,7 @@ struct SearchPage {
 
     static func launch() -> SearchPage {
         let app = XCUIApplication()
-        app.launchArguments += ["--sample-data", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launchArguments += ["--sample-data", "-AppleLanguages", "(en)"]
         app.launch()
         return SearchPage(app: app).waitUntilShown()
     }

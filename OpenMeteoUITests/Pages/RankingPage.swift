@@ -25,13 +25,14 @@ struct RankingPage {
     }
 
     func back() -> SearchPage {
-        navigationBar.buttons.element(boundBy: 0).tap()
+        navigationBar.buttons["BackButton"].tap()
         return SearchPage(app: app).waitUntilShown()
     }
 
     @discardableResult
     func waitUntilShown() -> RankingPage {
         navigationBar.waitUntilExists()
+        app.descendants(matching: .any).labelled(containing: "Loading forecast").waitUntilGone()
         return self
     }
 }

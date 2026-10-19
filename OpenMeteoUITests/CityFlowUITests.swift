@@ -19,7 +19,7 @@ final class CityFlowUITests: XCTestCase {
         ranking.openHowScores().close()
 
         let detail = ranking.openActivity(named: "Surfing")
-        detail.daysHeader.waitUntilExists()
+        detail.chartHeader.waitUntilExists()
 
         let search = detail.back().back().clearQuery()
         search.recentsHeader.waitUntilExists()
