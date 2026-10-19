@@ -10,7 +10,16 @@ import SwiftUI
 
 @main
 struct OpenMeteoApp: App {
-    @State private var session = AppComposer(logSubsystem: Bundle.main.bundleIdentifier!).makeSession()
+    @State private var session = Self.makeSession()
+
+    private static func makeSession() -> AppSession {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains(AppStandard.sampleDataArgument) {
+            return PreviewAppFactory().makeSession()
+        }
+        #endif
+        return AppComposer(logSubsystem: Bundle.main.bundleIdentifier!).makeSession()
+    }
 
     var body: some Scene {
         WindowGroup {

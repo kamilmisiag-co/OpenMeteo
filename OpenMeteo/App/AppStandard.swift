@@ -16,4 +16,5 @@ enum AppStandard {
     static let geoNamesURL = URL(string: "https://www.geonames.org")!
     static let networkLogCategory = "network"
     static let storageLogCategory = "storage"
+    static let sampleDataArgument = "--sample-data"
 }
