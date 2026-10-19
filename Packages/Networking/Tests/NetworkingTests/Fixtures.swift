@@ -7,6 +7,7 @@
 
 import Foundation
 import Networking
+import NetworkingMocks
 import Utils
 import UtilsMocks
 
@@ -65,10 +66,6 @@ struct MethodOverrideInterceptor: RequestInterceptor {
     }
 }
 
-struct SilentSleeper: Sleeping {
-    func sleep(for duration: Duration) async throws {}
-}
-
 actor CancellingTransport: HTTPTransport {
     private let response: HTTPResponse
     private(set) var requestCount = 0
@@ -82,13 +79,6 @@ actor CancellingTransport: HTTPTransport {
         withUnsafeCurrentTask { $0?.cancel() }
         return response
     }
-}
-
-struct RawEndpoint: Endpoint {
-    typealias Response = Data
-
-    var method: HTTPMethod { .get }
-    var path: String { "/v1/raw" }
 }
 
 struct FailingEncodable: Encodable, Sendable {
@@ -105,32 +95,12 @@ struct FailingBodyEndpoint: Endpoint {
     var body: RequestBody? { .encodable(FailingEncodable()) }
 }
 
-struct ChainInterceptor: RequestInterceptor {
-    let value: String
-
-    func intercept(_ request: URLRequest) async throws -> URLRequest {
-        var request = request
-        request.setValue((request.value(forHTTPHeaderField: "X-Chain") ?? "") + value, forHTTPHeaderField: "X-Chain")
-        return request
-    }
-}
-
-actor CallCounter {
-    private(set) var count = 0
-
-    func increment() -> Int {
-        count += 1
-        return count
-    }
-}
-
 enum Fixtures {
-    static let baseURL = URL(string: "https://api.example.test/base")!
     static let lisbon = TestCity(name: "Lisbon", countryCode: "PT")
     static let lisbonJSON = Data(#"{"name":"Lisbon","country_code":"PT"}"#.utf8)
 
     static let configuration = RequestConfiguration(
-        baseURL: baseURL,
+        baseURL: NetworkFixtures.baseURL,
         defaultHeaders: ["Accept": "application/json", "X-Client": "tests"],
         timeout: .seconds(15),
         cachePolicy: .reloadIgnoringLocalCacheData
@@ -150,10 +120,10 @@ enum Fixtures {
     }
 
     static var requestBuilder: RequestBuilder {
-        RequestBuilder(configuration: configuration, bodyEncoder: JSONBodyEncoder(encoder: jsonEncoder, contentType: "application/json"))
+        RequestBuilder(configuration: configuration, encoder: jsonEncoder, contentType: "application/json")
     }
 
-    static let now = Calendar.gregorian(timeZone: .gmt).date(from: DateComponents(year: 2026, month: 10, day: 16, hour: 18))!
+    static let now = Calendar.gregorian(timeZone: .gmt).date(year: 2026, month: 10, day: 16, hour: 18)
 
     static func retryPolicy(
         maximumRetries: Int,
@@ -175,10 +145,6 @@ enum Fixtures {
         )
     }
 
-    static func response(status: Int, body: Data = Data(), headers: [String: String] = [:]) -> HTTPResponse {
-        HTTPResponse(statusCode: status, headers: headers, body: body, url: baseURL)
-    }
-
     static func client(
         transport: any HTTPTransport,
         retryPolicy: any RetryPolicy = NoRetryPolicy(),
@@ -191,37 +157,10 @@ enum Fixtures {
             interceptors: interceptors,
             transport: transport,
             validator: StatusCodeValidator(acceptableStatusCodes: 200..<300),
-            decoder: JSONResponseDecoder(decoder: jsonDecoder),
+            decoder: jsonDecoder,
             retryPolicy: retryPolicy,
             sleeper: sleeper,
             observers: observers
         )
-    }
-
-    static func request(method: HTTPMethod) -> URLRequest {
-        var request = URLRequest(url: baseURL)
-        request.httpMethod = method.rawValue
-        return request
-    }
-}
-
-extension NetworkError {
-    var caseName: String {
-        switch self {
-        case .invalidURL: "invalidURL"
-        case .encoding: "encoding"
-        case .transport: "transport"
-        case .nonHTTPResponse: "nonHTTPResponse"
-        case .unacceptableStatusCode: "unacceptableStatusCode"
-        case .decoding: "decoding"
-        }
-    }
-
-    var statusCode: Int? {
-        if case .unacceptableStatusCode(let response) = self { response.statusCode } else { nil }
-    }
-
-    var urlErrorCode: URLError.Code? {
-        if case .transport(let error) = self { error.code } else { nil }
     }
 }

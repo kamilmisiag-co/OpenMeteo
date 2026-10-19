@@ -7,6 +7,11 @@
 
 import Foundation
 
+public protocol DataStoring: Sendable {
+    func data(forKey key: String) throws -> Data?
+    func write(_ data: Data, forKey key: String) throws
+}
+
 public struct FileDataStore: DataStoring {
     private let directory: URL
     private let fileSystem: any FileSystemAccessing
@@ -23,12 +28,11 @@ public struct FileDataStore: DataStoring {
     }
 
     public func write(_ data: Data, forKey key: String) throws {
-        let url = try url(forKey: key)
         try fileSystem.createDirectory(at: directory)
-        try fileSystem.write(data, to: url)
+        try fileSystem.write(data, to: url(forKey: key))
     }
 
-    private func url(forKey key: String) throws -> URL {
-        directory.appending(path: try fileNames.fileName(forKey: key), directoryHint: .notDirectory)
+    private func url(forKey key: String) -> URL {
+        directory.appending(path: fileNames.fileName(forKey: key), directoryHint: .notDirectory)
     }
 }

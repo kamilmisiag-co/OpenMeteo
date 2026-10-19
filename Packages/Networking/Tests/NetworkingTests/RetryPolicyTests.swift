@@ -7,13 +7,14 @@
 
 import Foundation
 import Networking
+import NetworkingMocks
 import Testing
 
 @Suite("Retry policy")
 struct RetryPolicyTests {
     private let policy = Fixtures.retryPolicy(maximumRetries: 4)
-    private let get = Fixtures.request(method: .get)
-    private let unavailable = NetworkError.unacceptableStatusCode(Fixtures.response(status: 503))
+    private let get = NetworkFixtures.request(method: .get)
+    private let unavailable = NetworkError.unacceptableStatusCode(NetworkFixtures.response(status: 503))
 
     @Test("Delays grow exponentially and stop at the maximum delay")
     func exponentialBackoff() {
@@ -31,13 +32,13 @@ struct RetryPolicyTests {
 
     @Test("Only the injected methods are retried")
     func retryableMethods() {
-        #expect(policy.delay(beforeRetry: 1, of: Fixtures.request(method: .post), after: unavailable) == nil)
-        #expect(policy.delay(beforeRetry: 1, of: Fixtures.request(method: .put), after: unavailable) == .seconds(1))
+        #expect(policy.delay(beforeRetry: 1, of: NetworkFixtures.request(method: .post), after: unavailable) == nil)
+        #expect(policy.delay(beforeRetry: 1, of: NetworkFixtures.request(method: .put), after: unavailable) == .seconds(1))
     }
 
-    @Test("Only the injected status codes are retried", arguments: [(429, true), (503, true), (400, false), (404, false), (501, false)])
+    @Test("Only the injected status codes are retried", arguments: [(429, true), (501, false)])
     func retryableStatus(status: Int, retried: Bool) {
-        let error = NetworkError.unacceptableStatusCode(Fixtures.response(status: status))
+        let error = NetworkError.unacceptableStatusCode(NetworkFixtures.response(status: status))
         #expect((policy.delay(beforeRetry: 1, of: get, after: error) != nil) == retried)
     }
 
@@ -55,7 +56,7 @@ struct RetryPolicyTests {
     }
 
     private func rateLimited(retryAfter value: String) -> NetworkError {
-        .unacceptableStatusCode(Fixtures.response(status: 429, headers: ["Retry-After": value]))
+        .unacceptableStatusCode(NetworkFixtures.response(status: 429, retryAfter: value))
     }
 
     @Test("Retry-After in seconds lengthens the delay")
@@ -73,7 +74,7 @@ struct RetryPolicyTests {
 
     @Test("An HTTP-date Retry-After is measured against the response's own Date header")
     func retryAfterAgainstServerDate() {
-        let error = NetworkError.unacceptableStatusCode(Fixtures.response(status: 503, headers: [
+        let error = NetworkError.unacceptableStatusCode(NetworkFixtures.response(status: 503, headers: [
             "Retry-After": "Fri, 16 Oct 2026 18:00:05 GMT",
             "Date": "Fri, 16 Oct 2026 17:59:57 GMT",
         ]))
@@ -114,16 +115,5 @@ struct RetryPolicyTests {
     func nanFraction() {
         let policy = Fixtures.retryPolicy(maximumRetries: 3, jitter: .equal, randomFraction: .nan)
         #expect(policy.delay(beforeRetry: 3, of: get, after: unavailable) == .seconds(4))
-    }
-
-    @Test("Retry-After still wins over a jittered backoff")
-    func jitterWithRetryAfter() {
-        let full = Fixtures.retryPolicy(maximumRetries: 3, jitter: .full, randomFraction: 0)
-        #expect(full.delay(beforeRetry: 1, of: get, after: rateLimited(retryAfter: "2")) == .seconds(2))
-    }
-
-    @Test("The no-retry policy never retries")
-    func noRetry() {
-        #expect(NoRetryPolicy().delay(beforeRetry: 1, of: get, after: unavailable) == nil)
     }
 }

@@ -8,6 +8,7 @@ let package = Package(
         .library(name: "Storage", targets: ["Storage"]),
     ],
     dependencies: [
+        .package(path: "../Utils"),
         .package(path: "../Logic"),
     ],
     targets: [
@@ -15,6 +16,7 @@ let package = Package(
             name: "Storage",
             dependencies: [
                 .product(name: "Logic", package: "Logic"),
+                .product(name: "Utils", package: "Utils"),
             ],
         ),
         .testTarget(
@@ -22,6 +24,9 @@ let package = Package(
             dependencies: [
                 "Storage",
                 .product(name: "Logic", package: "Logic"),
+                .product(name: "LogicMocks", package: "Logic"),
+                .product(name: "Utils", package: "Utils"),
+                .product(name: "UtilsMocks", package: "Utils"),
             ],
         ),
     ]

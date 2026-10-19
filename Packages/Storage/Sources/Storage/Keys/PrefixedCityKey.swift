@@ -7,6 +7,10 @@
 
 import Logic
 
+public protocol WeatherCacheKeying: Sendable {
+    func key(for city: City) -> String
+}
+
 public struct PrefixedCityKey: WeatherCacheKeying {
     private let prefix: String
 

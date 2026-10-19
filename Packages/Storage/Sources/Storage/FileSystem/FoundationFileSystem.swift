@@ -7,6 +7,12 @@
 
 import Foundation
 
+public protocol FileSystemAccessing: Sendable {
+    func contents(at url: URL) throws -> Data?
+    func write(_ data: Data, to url: URL) throws
+    func createDirectory(at url: URL) throws
+}
+
 public struct FoundationFileSystem: FileSystemAccessing {
     public init() {}
 

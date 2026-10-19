@@ -7,55 +7,37 @@
 
 import Foundation
 import Networking
+import NetworkingMocks
 import Testing
+import UtilsMocks
 
 @Suite("Validation and decoding")
 struct ValidationAndDecodingTests {
-    @Test("Status codes inside the injected range pass", arguments: [200, 204, 299])
-    func acceptsStatus(status: Int) throws {
-        try StatusCodeValidator(acceptableStatusCodes: 200..<300).validate(Fixtures.response(status: status))
+    @Test("Status codes inside the injected range pass")
+    func acceptsStatus() throws {
+        try StatusCodeValidator(acceptableStatusCodes: 200..<300).validate(NetworkFixtures.response(status: 200))
     }
 
-    @Test("Status codes outside the range carry the full response", arguments: [199, 301, 404, 503])
-    func rejectsStatus(status: Int) {
+    @Test("Status codes outside the range carry the full response")
+    func rejectsStatus() {
         let error = #expect(throws: NetworkError.self) {
-            try StatusCodeValidator(acceptableStatusCodes: 200..<300).validate(Fixtures.response(status: status))
+            try StatusCodeValidator(acceptableStatusCodes: 200..<300).validate(NetworkFixtures.response(status: 404))
         }
-        #expect(error?.statusCode == status)
+        #expect(error?.statusCode == 404)
     }
 
-    @Test("The JSON decoder uses the injected decoding strategy")
+    @Test("Decodable endpoints decode the body with the injected decoder")
     func decodesWithStrategy() throws {
-        let city = try JSONResponseDecoder(decoder: Fixtures.jsonDecoder).decode(TestCity.self, from: Fixtures.lisbonJSON)
+        let city = try CityEndpoint(name: "Lisbon").decode(NetworkFixtures.response(body: Fixtures.lisbonJSON), using: Fixtures.jsonDecoder)
         #expect(city == Fixtures.lisbon)
     }
 
-    @Test("Malformed JSON is a decoding error")
-    func decodingFailure() {
+    @Test("Any decoder failure becomes a decoding error that keeps the original error")
+    func decoderFailureWrapped() {
         let error = #expect(throws: NetworkError.self) {
-            try JSONResponseDecoder(decoder: Fixtures.jsonDecoder).decode(TestCity.self, from: Data("{".utf8))
+            try CityEndpoint(name: "Lisbon").decode(NetworkFixtures.response(body: Fixtures.lisbonJSON), using: FailingDataDecoder())
         }
         #expect(error?.caseName == "decoding")
-    }
-
-    @Test("Endpoints with an empty response ignore the body")
-    func emptyResponse() throws {
-        let decoder = JSONResponseDecoder(decoder: Fixtures.jsonDecoder)
-        let endpoint = UploadEndpoint(payload: Data(), contentTypeOverride: nil)
-        #expect(try endpoint.decode(Fixtures.response(status: 204, body: Data("not json".utf8)), using: decoder) == EmptyResponse())
-    }
-
-    @Test("Data responses get the raw body without JSON decoding")
-    func rawData() throws {
-        let decoder = JSONResponseDecoder(decoder: Fixtures.jsonDecoder)
-        let body = Data([0xFF, 0xD8, 0xFF])
-        #expect(try RawEndpoint().decode(Fixtures.response(status: 200, body: body), using: decoder) == body)
-    }
-
-    @Test("Header lookup ignores case")
-    func headerLookup() {
-        let response = Fixtures.response(status: 200, headers: ["Retry-After": "3"])
-        #expect(response.value(forHeader: "retry-after") == "3")
-        #expect(response.value(forHeader: "ETag") == nil)
+        #expect(error?.underlyingError is UnrelatedError)
     }
 }

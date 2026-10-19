@@ -74,14 +74,7 @@ enum Fixtures {
             latitude: 44.72728, longitude: -75.32105, timeZoneIdentifier: "America/New_York"
         ),
     ]
-    static let zakopane = City(
-        id: 3_080_866, name: "Zakopane", region: "Lesser Poland", country: "Poland", countryCode: "PL",
-        latitude: 49.2992, longitude: 19.9496, timeZoneIdentifier: "Europe/Warsaw"
-    )
-    static let noTimeZone = City(
-        id: 1, name: "Nowhere", region: nil, country: "Atlantis", countryCode: nil,
-        latitude: 0, longitude: 0, timeZoneIdentifier: nil
-    )
+    static let automaticTimeZoneIdentifier = "auto"
 
     static func data(_ file: File) throws -> Data {
         let url = try #require(Bundle.module.url(forResource: file.rawValue, withExtension: "json", subdirectory: "Fixtures"))
@@ -96,45 +89,28 @@ enum Fixtures {
         try JSONDecoder().decode(type, from: Data(json.utf8))
     }
 
-    static func response(_ file: File, status: Int = 200) throws -> HTTPResponse {
-        HTTPResponse(statusCode: status, headers: ["Content-Type": "application/json; charset=utf-8"], body: try data(file), url: nil)
-    }
-
     static func localMidnight(_ year: Int, _ month: Int, _ day: Int, in timeZoneIdentifier: String) throws -> Date {
-        let timeZone = try #require(TimeZone(identifier: timeZoneIdentifier))
-        return try #require(Calendar.gregorian(timeZone: timeZone).date(from: DateComponents(year: year, month: month, day: day)))
+        Calendar.gregorian(timeZone: try #require(TimeZone(identifier: timeZoneIdentifier))).date(year: year, month: month, day: day)
     }
 
-    static func baseURL(host: String) throws -> URL {
-        try #require(URL(string: "\(OpenMeteoStandard.scheme)://\(host)"))
+    static func instant(_ text: String) throws -> Date {
+        try Date(text, strategy: .iso8601)
     }
 
-    static func requestBuilder(host: String) throws -> RequestBuilder {
+    static func requestBuilder(baseURL: URL) -> RequestBuilder {
         RequestBuilder(
             configuration: RequestConfiguration(
-                baseURL: try baseURL(host: host),
+                baseURL: baseURL,
                 defaultHeaders: [:],
                 timeout: OpenMeteoStandard.requestTimeout,
                 cachePolicy: .useProtocolCachePolicy
             ),
-            bodyEncoder: JSONBodyEncoder(encoder: JSONEncoder(), contentType: "application/json")
+            encoder: JSONEncoder(),
+            contentType: "application/json"
         )
     }
 
-    static func urlErrorCode(of error: NetworkError?) -> URLError.Code? {
-        guard case .transport(let urlError)? = error else { return nil }
-        return urlError.code
-    }
-
-    static func statusResponse(of error: NetworkError?) -> HTTPResponse? {
-        guard case .unacceptableStatusCode(let response)? = error else { return nil }
-        return response
-    }
-
-    static func retryPolicy(
-        randomFraction: @escaping ExponentialBackoffRetryPolicy.RandomFraction = { 1 },
-        dateProvider: any DateProviding = ManualDateProvider(now: Date(timeIntervalSince1970: 0))
-    ) -> ExponentialBackoffRetryPolicy {
+    static func retryPolicy(randomFraction: @escaping ExponentialBackoffRetryPolicy.RandomFraction) -> ExponentialBackoffRetryPolicy {
         ExponentialBackoffRetryPolicy(
             maximumRetries: OpenMeteoStandard.maximumRetries,
             initialDelay: OpenMeteoStandard.initialRetryDelay,
@@ -142,15 +118,11 @@ enum Fixtures {
             maximumDelay: OpenMeteoStandard.maximumRetryDelay,
             jitter: OpenMeteoStandard.retryJitter,
             randomFraction: randomFraction,
-            dateProvider: dateProvider,
+            dateProvider: ManualDateProvider(now: Date(timeIntervalSince1970: 0)),
             retryableMethods: OpenMeteoStandard.retryableMethods,
             retryableStatusCodes: OpenMeteoStandard.retryableStatusCodes,
             retryableURLErrorCodes: OpenMeteoStandard.retryableURLErrorCodes
         )
-    }
-
-    static func cityMapper(locale: Locale = Locale(identifier: "en_US_POSIX")) -> GeocodingCityMapper {
-        GeocodingCityMapper(regionNames: LocaleRegionNameProvider(locale: locale))
     }
 
     static func dailyWeatherMapper(
@@ -163,40 +135,6 @@ enum Fixtures {
             dayKeys: GregorianDayKeyParser(),
             snowDepths: HourlySnowDepthAggregator(),
             units: units
-        )
-    }
-
-    static func geocodingRequests(localeIdentifier: String = "en_US") -> GeocodingRequestFactory {
-        GeocodingRequestFactory(
-            resultLimit: OpenMeteoStandard.geocodingResultLimit,
-            allowedResultLimits: OpenMeteoStandard.geocodingResultLimits,
-            languageCodes: LocaleLanguageCodeProvider(
-                locale: Locale(identifier: localeIdentifier),
-                fallbackLanguageCode: OpenMeteoStandard.fallbackLanguageCode
-            )
-        )
-    }
-
-    static func forecastRequests(fallbackTimeZoneIdentifier: String = OpenMeteoStandard.timeZoneFallbackIdentifier) -> ForecastRequestFactory {
-        ForecastRequestFactory(
-            dayCounts: PaddedForecastDayCount(
-                additionalDays: OpenMeteoStandard.additionalForecastDays,
-                maximumDays: OpenMeteoStandard.maximumForecastDays
-            ),
-            fallbackTimeZoneIdentifier: fallbackTimeZoneIdentifier
-        )
-    }
-
-    static func client(host: String, transport: any HTTPTransport, sleeper: any Sleeping) throws -> NetworkClient {
-        NetworkClient(
-            requestBuilder: try requestBuilder(host: host),
-            interceptors: [],
-            transport: transport,
-            validator: StatusCodeValidator(acceptableStatusCodes: 200..<300),
-            decoder: JSONResponseDecoder(decoder: JSONDecoder()),
-            retryPolicy: retryPolicy(),
-            sleeper: sleeper,
-            observers: []
         )
     }
 }

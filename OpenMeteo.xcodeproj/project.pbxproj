@@ -10,7 +10,6 @@
 		14AE6D6030812DBA006369E5 /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 14AE6D6130812DBA006369E5 /* DesignSystem */; };
 		14AE6D6330812DBA006369E5 /* Utils in Frameworks */ = {isa = PBXBuildFile; productRef = 14AE6D6430812DBA006369E5 /* Utils */; };
 		14AE6D6830812DBA006369E5 /* Networking in Frameworks */ = {isa = PBXBuildFile; productRef = 14AE6D6730812DBA006369E5 /* Networking */; };
-		14AE6D6C30812DBA006369E5 /* NetworkingStubs in Frameworks */ = {isa = PBXBuildFile; productRef = 14AE6D6B30812DBA006369E5 /* NetworkingStubs */; };
 		14AE6D6F30812DBA006369E5 /* Logic in Frameworks */ = {isa = PBXBuildFile; productRef = 14AE6D6E30812DBA006369E5 /* Logic */; };
 		14AE6D7230812DBA006369E5 /* OpenMeteoAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 14AE6D7130812DBA006369E5 /* OpenMeteoAPI */; };
 		14AE6D7530812DBA006369E5 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 14AE6D7430812DBA006369E5 /* Storage */; };
@@ -77,7 +76,6 @@
 		14AE6D4430812DBA006369E5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				14AE6D6C30812DBA006369E5 /* NetworkingStubs in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -170,9 +168,6 @@
 				14AE6D4A30812DBA006369E5 /* OpenMeteoUITests */,
 			);
 			name = OpenMeteoUITests;
-			packageProductDependencies = (
-				14AE6D6B30812DBA006369E5 /* NetworkingStubs */,
-			);
 			productName = OpenMeteoUITests;
 			productReference = 14AE6D4730812DBA006369E5 /* OpenMeteoUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -634,11 +629,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 14AE6D6630812DBA006369E5 /* XCLocalSwiftPackageReference "Packages/Networking" */;
 			productName = Networking;
-		};
-		14AE6D6B30812DBA006369E5 /* NetworkingStubs */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 14AE6D6630812DBA006369E5 /* XCLocalSwiftPackageReference "Packages/Networking" */;
-			productName = NetworkingStubs;
 		};
 		14AE6D6E30812DBA006369E5 /* Logic */ = {
 			isa = XCSwiftPackageProductDependency;

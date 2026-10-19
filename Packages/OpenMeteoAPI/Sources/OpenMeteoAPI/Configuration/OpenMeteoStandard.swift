@@ -9,16 +9,13 @@ import Foundation
 import Networking
 
 public enum OpenMeteoStandard {
-    public static let scheme = "https"
-    public static let geocodingHost = "geocoding-api.open-meteo.com"
-    public static let forecastHost = "api.open-meteo.com"
+    public static let geocodingBaseURL = URL(string: "https://geocoding-api.open-meteo.com")!
+    public static let forecastBaseURL = URL(string: "https://api.open-meteo.com")!
     public static let requestTimeout = Duration.seconds(15)
     public static let geocodingResultLimit = 10
-    public static let geocodingResultLimits = 1...100
     public static let fallbackLanguageCode = "en"
     public static let additionalForecastDays = 1
     public static let maximumForecastDays = 16
-    public static let timeZoneFallbackIdentifier = "auto"
     public static let forecastUnits = ForecastUnits(percentPerFraction: 100, centimetresPerSnowDepthUnit: 100)
     public static let maximumRetries = 2
     public static let initialRetryDelay = Duration.milliseconds(500)

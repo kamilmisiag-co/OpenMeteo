@@ -7,5 +7,4 @@
 
 public enum MockError: Error, Hashable, Sendable {
     case noResultQueued
-    case unexpectedResponseType(expected: String)
 }
